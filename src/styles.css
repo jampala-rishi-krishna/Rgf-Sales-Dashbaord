@@ -1,0 +1,106 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-beige: var(--beige);
+  --color-rare-red: var(--rare-red);
+  --color-hunter: var(--hunter);
+  --color-near-black: var(--near-black);
+  --font-sans: Arial, Helvetica, sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+  /* Brand */
+  --rare-red: #86000B;
+  --beige: #FFEBCE;
+  --hunter: #33673B;
+  --near-black: #1B2419;
+
+  --background: #FFFFFF;
+  --foreground: #1B2419;
+  --card: #FFFFFF;
+  --card-foreground: #1B2419;
+  --popover: #FFFFFF;
+  --popover-foreground: #1B2419;
+  --primary: #86000B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFEBCE;
+  --secondary-foreground: #1B2419;
+  --muted: #F5F1EA;
+  --muted-foreground: #6B6B66;
+  --accent: #FFEBCE;
+  --accent-foreground: #86000B;
+  --destructive: #86000B;
+  --destructive-foreground: #FFFFFF;
+  --border: #E8E2D5;
+  --input: #E8E2D5;
+  --ring: #86000B;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Mobile responsive email content constraint */
+.email-body-content img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+.email-body-content table {
+  max-width: 100% !important;
+  width: 100% !important;
+  table-layout: auto !important;
+}
+.email-body-content div, .email-body-content p {
+  max-width: 100% !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Safe area inset support for mobile bottom navigation */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Avoid automatic iOS Safari zoom when tapping inputs */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
