@@ -15,8 +15,8 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
+import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
-import { Route as ApiEmailConversationRouteImport } from './routes/api/email-conversation'
 import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
@@ -52,14 +52,14 @@ const ApiTwilioMessagesRoute = ApiTwilioMessagesRouteImport.update({
   path: '/api/twilio-messages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGmailThreadsRoute = ApiGmailThreadsRouteImport.update({
+  id: '/api/gmail-threads',
+  path: '/api/gmail-threads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGmailThreadRoute = ApiGmailThreadRouteImport.update({
   id: '/api/gmail-thread',
   path: '/api/gmail-thread',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiEmailConversationRoute = ApiEmailConversationRouteImport.update({
-  id: '/api/email-conversation',
-  path: '/api/email-conversation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWhatsappRoute = AppWhatsappRouteImport.update({
@@ -90,8 +90,8 @@ export interface FileRoutesByFullPath {
   '/email': typeof AppEmailRoute
   '/sms': typeof AppSmsRoute
   '/whatsapp': typeof AppWhatsappRoute
-  '/api/email-conversation': typeof ApiEmailConversationRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
+  '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
@@ -102,8 +102,8 @@ export interface FileRoutesByTo {
   '/email': typeof AppEmailRoute
   '/sms': typeof AppSmsRoute
   '/whatsapp': typeof AppWhatsappRoute
-  '/api/email-conversation': typeof ApiEmailConversationRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
+  '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
@@ -117,8 +117,8 @@ export interface FileRoutesById {
   '/_app/email': typeof AppEmailRoute
   '/_app/sms': typeof AppSmsRoute
   '/_app/whatsapp': typeof AppWhatsappRoute
-  '/api/email-conversation': typeof ApiEmailConversationRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
+  '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
@@ -133,8 +133,8 @@ export interface FileRouteTypes {
     | '/email'
     | '/sms'
     | '/whatsapp'
-    | '/api/email-conversation'
     | '/api/gmail-thread'
+    | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/whatsapp-conversations'
@@ -145,8 +145,8 @@ export interface FileRouteTypes {
     | '/email'
     | '/sms'
     | '/whatsapp'
-    | '/api/email-conversation'
     | '/api/gmail-thread'
+    | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/whatsapp-conversations'
@@ -159,8 +159,8 @@ export interface FileRouteTypes {
     | '/_app/email'
     | '/_app/sms'
     | '/_app/whatsapp'
-    | '/api/email-conversation'
     | '/api/gmail-thread'
+    | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/whatsapp-conversations'
@@ -170,8 +170,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
-  ApiEmailConversationRoute: typeof ApiEmailConversationRoute
   ApiGmailThreadRoute: typeof ApiGmailThreadRoute
+  ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
@@ -221,18 +221,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTwilioMessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/gmail-threads': {
+      id: '/api/gmail-threads'
+      path: '/api/gmail-threads'
+      fullPath: '/api/gmail-threads'
+      preLoaderRoute: typeof ApiGmailThreadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/gmail-thread': {
       id: '/api/gmail-thread'
       path: '/api/gmail-thread'
       fullPath: '/api/gmail-thread'
       preLoaderRoute: typeof ApiGmailThreadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/email-conversation': {
-      id: '/api/email-conversation'
-      path: '/api/email-conversation'
-      fullPath: '/api/email-conversation'
-      preLoaderRoute: typeof ApiEmailConversationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/whatsapp': {
@@ -287,8 +287,8 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
-  ApiEmailConversationRoute: ApiEmailConversationRoute,
   ApiGmailThreadRoute: ApiGmailThreadRoute,
+  ApiGmailThreadsRoute: ApiGmailThreadsRoute,
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
