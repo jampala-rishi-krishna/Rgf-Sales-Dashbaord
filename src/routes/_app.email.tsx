@@ -31,6 +31,17 @@ interface ConversationThread {
   messages: ConversationMessage[];
 }
 
+interface GmailMessage {
+  id: string;
+  from: string;
+  to: string;
+  subject: string;
+  date: string;
+  direction: "inbound" | "outbound";
+  htmlBody: string;
+  snippet: string;
+}
+
 function formatTs(ts: string): string {
   if (!ts) return "";
   try {
@@ -71,36 +82,39 @@ function EmailTab() {
 
   const selected = selectedIdx !== null ? rows[selectedIdx] : null;
 
-  // ── Gmail body ───────────────────────────────────────────────────────────
-  const [realEmailHtml, setRealEmailHtml] = useState<string | null>(null);
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  // ── Gmail thread ──────────────────────────────────────────────────────────
+  const [thread, setThread] = useState<GmailMessage[]>([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadError, setThreadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selected) {
-      setRealEmailHtml(null);
-      setEmailError(null);
+      setThread([]);
+      setThreadError(null);
       return;
     }
     const to = selected.Email_Sent_To;
     if (!to) {
-      setRealEmailHtml(null);
-      setEmailError("No recipient email on record.");
+      setThread([]);
+      setThreadError("No recipient email on record.");
       return;
     }
-    setEmailLoading(true);
-    setRealEmailHtml(null);
-    setEmailError(null);
+    setThreadLoading(true);
+    setThread([]);
+    setThreadError(null);
 
-    fetch(`/api/gmail-email?to=${encodeURIComponent(to)}`)
+    fetch(`/api/gmail-thread?to=${encodeURIComponent(to)}`)
       .then((r) => r.json())
-      .then((d) => {
-        if (d.htmlBody) setRealEmailHtml(d.htmlBody);
-        else setEmailError("Email body not found in Gmail.");
+      .then((data) => {
+        if (data.messages && data.messages.length > 0) {
+          setThread(data.messages);
+        } else {
+          setThreadError("No Gmail thread found for this address yet.");
+        }
       })
-      .catch(() => setEmailError("Failed to load email from Gmail."))
-      .finally(() => setEmailLoading(false));
-  }, [selected, refreshTick]);
+      .catch(() => setThreadError("Failed to load thread from Gmail."))
+      .finally(() => setThreadLoading(false));
+  }, [selected]);
 
   // ── Conversation thread (25 s auto-refresh while a row is selected) ──────
   const [conversationThread, setConversationThread] = useState<ConversationThread | null>(null);
@@ -247,26 +261,40 @@ function EmailTab() {
               </div>
             </div>
 
-            {/* Original outbound email body */}
-            {emailLoading && (
+            {threadLoading && (
               <div className="py-8 text-center text-sm" style={{ color: "#86000B" }}>
-                Loading email from Gmail…
+                Loading conversation from Gmail…
               </div>
             )}
-            {emailError && !emailLoading && (
+            {threadError && !threadLoading && (
               <div
                 className="rounded-lg p-4 text-[13px]"
                 style={{ backgroundColor: "#fff5f5", border: "1px solid #fcc", color: "#c00" }}
               >
-                {emailError}
+                {threadError}
               </div>
             )}
-            {realEmailHtml && !emailLoading && (
-              <div
-                className="rounded-lg p-6 bg-white mb-2"
-                style={{ border: "1px solid #e0d6c8" }}
-                dangerouslySetInnerHTML={{ __html: realEmailHtml }}
-              />
+            {!threadLoading && thread.length > 0 && (
+              <div className="space-y-4">
+                {thread.map((m) => (
+                  <div
+                    key={m.id}
+                    className="rounded-lg p-4"
+                    style={{
+                      border: "1px solid #e0d6c8",
+                      backgroundColor: m.direction === "outbound" ? "#ffffff" : "#f9f5ef",
+                    }}
+                  >
+                    <div className="text-[11px] text-gray-500 mb-2 flex justify-between">
+                      <span className="font-semibold" style={{ color: m.direction === "outbound" ? "#86000B" : "#1B2419" }}>
+                        {m.direction === "outbound" ? "Martin Reyes (Rare Global Food)" : m.from}
+                      </span>
+                      <span>{new Date(m.date).toLocaleString()}</span>
+                    </div>
+                    <div dangerouslySetInnerHTML={{ __html: m.htmlBody }} />
+                  </div>
+                ))}
+              </div>
             )}
             {selected.Gmail_Message_ID && (
               <div className="mb-5 text-[11px] text-gray-400">
