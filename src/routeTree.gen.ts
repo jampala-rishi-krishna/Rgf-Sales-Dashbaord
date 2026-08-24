@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
+import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
@@ -42,6 +43,11 @@ const ApiWhatsappConversationsRoute =
     path: '/api/whatsapp-conversations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiVapiRecordingRoute = ApiVapiRecordingRouteImport.update({
+  id: '/api/vapi-recording',
+  path: '/api/vapi-recording',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVapiCallsRoute = ApiVapiCallsRouteImport.update({
   id: '/api/vapi-calls',
   path: '/api/vapi-calls',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
+  '/api/vapi-recording': typeof ApiVapiRecordingRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
 }
 export interface FileRoutesByTo {
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
+  '/api/vapi-recording': typeof ApiVapiRecordingRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/': typeof AppIndexRoute
 }
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
+  '/api/vapi-recording': typeof ApiVapiRecordingRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/_app/': typeof AppIndexRoute
 }
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
+    | '/api/vapi-recording'
     | '/api/whatsapp-conversations'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
+    | '/api/vapi-recording'
     | '/api/whatsapp-conversations'
     | '/'
   id:
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
+    | '/api/vapi-recording'
     | '/api/whatsapp-conversations'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -174,6 +186,7 @@ export interface RootRouteChildren {
   ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
+  ApiVapiRecordingRoute: typeof ApiVapiRecordingRoute
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
 }
 
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/api/whatsapp-conversations'
       fullPath: '/api/whatsapp-conversations'
       preLoaderRoute: typeof ApiWhatsappConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vapi-recording': {
+      id: '/api/vapi-recording'
+      path: '/api/vapi-recording'
+      fullPath: '/api/vapi-recording'
+      preLoaderRoute: typeof ApiVapiRecordingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vapi-calls': {
@@ -291,6 +311,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGmailThreadsRoute: ApiGmailThreadsRoute,
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,
+  ApiVapiRecordingRoute: ApiVapiRecordingRoute,
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 export const Route = createFileRoute("/_app/calls")({
@@ -133,16 +133,7 @@ function CallsTab() {
             <div className="p-6 space-y-6">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide mb-2 text-gray-500">Recording</div>
-                {(sel.recordingUrl || sel.artifact?.recordingUrl) ? (
-                  <audio
-                    controls
-                    src={sel.recordingUrl ?? sel.artifact?.recordingUrl}
-                    className="w-full"
-                    style={{ accentColor: "#86000B" }}
-                  />
-                ) : (
-                  <div className="text-sm text-gray-400">No recording available.</div>
-                )}
+                <RecordingPlayer callId={sel.id} />
               </div>
 
               <div>
@@ -177,6 +168,28 @@ function CallsTab() {
         )}
       </div>
     </div>
+  );
+}
+
+function RecordingPlayer({ callId }: { callId: string }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [callId]);
+
+  if (failed) {
+    return <div className="text-sm text-gray-400">No recording available.</div>;
+  }
+
+  return (
+    <audio
+      controls
+      src={`/api/vapi-recording?callId=${callId}&type=stereo`}
+      className="w-full"
+      style={{ accentColor: "#86000B" }}
+      onError={() => setFailed(true)}
+    />
   );
 }
 
