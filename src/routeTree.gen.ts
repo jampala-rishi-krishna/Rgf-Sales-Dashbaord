@@ -13,12 +13,14 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
+import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website-chat-sessions'
 import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
 import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
+import { Route as AppWebsiteRouteImport } from './routes/_app.website'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
@@ -43,6 +45,11 @@ const ApiWhatsappConversationsRoute =
     path: '/api/whatsapp-conversations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiWebsiteChatSessionsRoute = ApiWebsiteChatSessionsRouteImport.update({
+  id: '/api/website-chat-sessions',
+  path: '/api/website-chat-sessions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVapiRecordingRoute = ApiVapiRecordingRouteImport.update({
   id: '/api/vapi-recording',
   path: '/api/vapi-recording',
@@ -73,6 +80,11 @@ const AppWhatsappRoute = AppWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWebsiteRoute = AppWebsiteRouteImport.update({
+  id: '/website',
+  path: '/website',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSmsRoute = AppSmsRouteImport.update({
   id: '/sms',
   path: '/sms',
@@ -95,12 +107,14 @@ export interface FileRoutesByFullPath {
   '/calls': typeof AppCallsRoute
   '/email': typeof AppEmailRoute
   '/sms': typeof AppSmsRoute
+  '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
 }
 export interface FileRoutesByTo {
@@ -108,12 +122,14 @@ export interface FileRoutesByTo {
   '/calls': typeof AppCallsRoute
   '/email': typeof AppEmailRoute
   '/sms': typeof AppSmsRoute
+  '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/': typeof AppIndexRoute
 }
@@ -124,12 +140,14 @@ export interface FileRoutesById {
   '/_app/calls': typeof AppCallsRoute
   '/_app/email': typeof AppEmailRoute
   '/_app/sms': typeof AppSmsRoute
+  '/_app/website': typeof AppWebsiteRoute
   '/_app/whatsapp': typeof AppWhatsappRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/_app/': typeof AppIndexRoute
 }
@@ -141,12 +159,14 @@ export interface FileRouteTypes {
     | '/calls'
     | '/email'
     | '/sms'
+    | '/website'
     | '/whatsapp'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,12 +174,14 @@ export interface FileRouteTypes {
     | '/calls'
     | '/email'
     | '/sms'
+    | '/website'
     | '/whatsapp'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/'
   id:
@@ -169,12 +191,14 @@ export interface FileRouteTypes {
     | '/_app/calls'
     | '/_app/email'
     | '/_app/sms'
+    | '/_app/website'
     | '/_app/whatsapp'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -187,6 +211,7 @@ export interface RootRouteChildren {
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
   ApiVapiRecordingRoute: typeof ApiVapiRecordingRoute
+  ApiWebsiteChatSessionsRoute: typeof ApiWebsiteChatSessionsRoute
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
 }
 
@@ -218,6 +243,13 @@ declare module '@tanstack/react-router' {
       path: '/api/whatsapp-conversations'
       fullPath: '/api/whatsapp-conversations'
       preLoaderRoute: typeof ApiWhatsappConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/website-chat-sessions': {
+      id: '/api/website-chat-sessions'
+      path: '/api/website-chat-sessions'
+      fullPath: '/api/website-chat-sessions'
+      preLoaderRoute: typeof ApiWebsiteChatSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vapi-recording': {
@@ -262,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWhatsappRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/website': {
+      id: '/_app/website'
+      path: '/website'
+      fullPath: '/website'
+      preLoaderRoute: typeof AppWebsiteRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/sms': {
       id: '/_app/sms'
       path: '/sms'
@@ -290,6 +329,7 @@ interface AppRouteChildren {
   AppCallsRoute: typeof AppCallsRoute
   AppEmailRoute: typeof AppEmailRoute
   AppSmsRoute: typeof AppSmsRoute
+  AppWebsiteRoute: typeof AppWebsiteRoute
   AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -298,6 +338,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCallsRoute: AppCallsRoute,
   AppEmailRoute: AppEmailRoute,
   AppSmsRoute: AppSmsRoute,
+  AppWebsiteRoute: AppWebsiteRoute,
   AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
 }
@@ -312,6 +353,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,
   ApiVapiRecordingRoute: ApiVapiRecordingRoute,
+  ApiWebsiteChatSessionsRoute: ApiWebsiteChatSessionsRoute,
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
 }
 export const routeTree = rootRouteImport

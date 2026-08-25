@@ -13,6 +13,7 @@ const TABS = [
   { to: "/email", label: "Email" },
   { to: "/sms", label: "SMS" },
   { to: "/whatsapp", label: "WhatsApp" },
+  { to: "/website", label: "Website" },
   { to: "/calls", label: "Calls" },
 ] as const;
 
