@@ -49,18 +49,16 @@ function isTest(c: WhatsAppConversation) {
   return c.companyName?.startsWith("Test Dummy Company - ");
 }
 
-// The conversation's messages aren't guaranteed to arrive in chronological
-// order from the API (they can come back grouped by sender), so the true
-// last message must be found by sorting on `ts`, not by array position.
-function lastMessage(c: WhatsAppConversation): WhatsAppMessage | undefined {
-  if (c.messages.length === 0) return undefined;
-  const sorted = [...c.messages].sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
-  return sorted[sorted.length - 1];
-}
-
-// The customer messaged and nobody has sent an outbound ("martin") message since.
-function isNotReplied(c: WhatsAppConversation) {
-  return lastMessage(c)?.role !== "martin";
+// "Replied" means genuine two-way communication happened at some point in the
+// conversation — the lead has at least one message AND Martin has at least
+// one message. The AI agent auto-replies to virtually every inbound message
+// within the same second, so "did the bot fire back a reply" is true almost
+// always and isn't a useful signal; what actually distinguishes conversations
+// is whether the lead ever wrote back at all. Most "not replied" conversations
+// are cold outreach where Martin sent the opener and the lead never responded.
+function hasReplied(c: WhatsAppConversation) {
+  const roles = new Set(c.messages.map((m) => m.role));
+  return roles.has("customer") && roles.has("martin");
 }
 
 function useWhatsAppConversations() {
@@ -86,8 +84,8 @@ function WhatsAppTab() {
   // Only apply the search/reply filters — never re-sort.
   const conversations = useMemo(() => {
     let all = data ?? [];
-    if (replyFilter === "replied") all = all.filter((c) => !isNotReplied(c));
-    if (replyFilter === "not_replied") all = all.filter((c) => isNotReplied(c));
+    if (replyFilter === "replied") all = all.filter((c) => hasReplied(c));
+    if (replyFilter === "not_replied") all = all.filter((c) => !hasReplied(c));
     const q = search.toLowerCase();
     if (!q) return all;
     return all.filter((c) =>
