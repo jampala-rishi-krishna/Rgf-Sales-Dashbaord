@@ -49,10 +49,18 @@ function isTest(c: WhatsAppConversation) {
   return c.companyName?.startsWith("Test Dummy Company - ");
 }
 
+// The conversation's messages aren't guaranteed to arrive in chronological
+// order from the API (they can come back grouped by sender), so the true
+// last message must be found by sorting on `ts`, not by array position.
+function lastMessage(c: WhatsAppConversation): WhatsAppMessage | undefined {
+  if (c.messages.length === 0) return undefined;
+  const sorted = [...c.messages].sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+  return sorted[sorted.length - 1];
+}
+
 // The customer messaged and nobody has sent an outbound ("martin") message since.
 function isNotReplied(c: WhatsAppConversation) {
-  if (c.messages.length === 0) return true;
-  return c.messages[c.messages.length - 1].role !== "martin";
+  return lastMessage(c)?.role !== "martin";
 }
 
 function useWhatsAppConversations() {

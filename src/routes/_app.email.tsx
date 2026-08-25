@@ -68,7 +68,7 @@ function useGmailThreads(pageToken: string | null) {
     queryKey: ["gmail-threads", pageToken],
     queryFn: async () => {
       const response = await fetch(
-        `/api/gmail-threads?maxResults=100${pageToken ? `&pageToken=${pageToken}` : ""}`,
+        `/api/gmail-threads?maxResults=40${pageToken ? `&pageToken=${pageToken}` : ""}`,
       );
       if (!response.ok) throw new Error("Gmail thread list failed");
       const data = await response.json();
@@ -159,7 +159,16 @@ function EmailTab() {
   }, [selectedThreadId]);
 
   const loadMore = () => {
-    if (nextPageToken) setPageToken(nextPageToken);
+    if (!nextPageToken) return;
+    // If the page we're trying to load is the one that just failed, pageToken
+    // is already set to nextPageToken (its own fetch never got far enough to
+    // advance nextPageToken) — a plain setState would be a no-op, so retry
+    // via refetch() instead of getting stuck.
+    if (nextPageToken === pageToken) {
+      refetch();
+    } else {
+      setPageToken(nextPageToken);
+    }
   };
 
   return (
@@ -206,7 +215,9 @@ function EmailTab() {
         </div>
         <div className="overflow-y-auto flex-1">
           {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
-          {error && <div className="p-4 text-sm text-red-600">Failed to load Gmail threads.</div>}
+          {error && allThreads.length === 0 && (
+            <div className="p-4 text-sm text-red-600">Failed to load Gmail threads.</div>
+          )}
           {!isLoading && !error && threads.length === 0 && (
             <div className="p-4 text-sm text-gray-500">No emails found.</div>
           )}
@@ -252,7 +263,12 @@ function EmailTab() {
             );
           })}
           {nextPageToken && (
-            <div className="p-3">
+            <div className="p-3 space-y-1.5">
+              {error && allThreads.length > 0 && (
+                <div className="text-xs text-red-600 text-center">
+                  Failed to load more emails — try again.
+                </div>
+              )}
               <button
                 onClick={loadMore}
                 disabled={isFetching}
