@@ -39,11 +39,15 @@ function statusBadge(call: VapiCall) {
   return { label: "Answered", bg: "#33673B" };
 }
 
-function CallsTab() {
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["vapi-calls"],
+const PAGE_SIZE = 100;
+
+function useVapiCalls(cursor: string | null) {
+  return useQuery({
+    queryKey: ["vapi-calls", cursor],
     queryFn: async () => {
-      const r = await fetch("/api/vapi-calls?limit=100");
+      const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
+      if (cursor) params.set("createdAtLt", cursor);
+      const r = await fetch(`/api/vapi-calls?${params.toString()}`);
       if (!r.ok) {
         const errText = await r.text();
         console.error("Vapi error:", errText);
@@ -53,15 +57,35 @@ function CallsTab() {
       const calls = Array.isArray(json) ? json : (json.data ?? json.calls ?? []);
       return calls as VapiCall[];
     },
-    refetchInterval: 60000,
+    refetchInterval: cursor === null ? 60000 : false,
   });
+}
+
+function dedupeById(calls: VapiCall[]): VapiCall[] {
+  const map = new Map<string, VapiCall>();
+  for (const c of calls) map.set(c.id, c);
+  return Array.from(map.values());
+}
+
+function CallsTab() {
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [allCalls, setAllCalls] = useState<VapiCall[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+
+  const { data, isLoading, isFetching, error, refetch } = useVapiCalls(cursor);
+
+  useEffect(() => {
+    if (!data) return;
+    setAllCalls((prev) => dedupeById([...prev, ...data]));
+    setHasMore(data.length >= PAGE_SIZE);
+  }, [data]);
 
   const [search, setSearch] = useState("");
   const [selId, setSelId] = useState<string | null>(null);
   const [showTranscript, setShowTranscript] = useState(false);
 
   const calls = useMemo(() => {
-    const sorted = [...(data ?? [])].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    const sorted = [...allCalls].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
     const q = search.toLowerCase().trim();
     if (!q) return sorted;
     return sorted.filter((c) =>
@@ -69,20 +93,34 @@ function CallsTab() {
       (c.id ?? "").toLowerCase().includes(q) ||
       (c.status ?? "").toLowerCase().includes(q),
     );
-  }, [data, search]);
+  }, [allCalls, search]);
 
   const sel = calls.find((c) => c.id === selId) ?? null;
 
+  const oldestCreatedAt = useMemo(
+    () => allCalls.reduce<string | null>((min, c) => (c.createdAt && (!min || c.createdAt < min) ? c.createdAt : min), null),
+    [allCalls],
+  );
+
+  const loadMore = () => {
+    if (!hasMore || !oldestCreatedAt) return;
+    if (oldestCreatedAt === cursor) {
+      refetch();
+    } else {
+      setCursor(oldestCreatedAt);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-[35%_65%]" style={{ height: "calc(100vh - 7rem - 1rem)" }}>
-      <div className="border-r flex flex-col" style={{ backgroundColor: "#FFEBCE" }}>
-        <div className="p-3 border-b">
+      <div className="border-r flex flex-col min-h-0" style={{ backgroundColor: "#FFEBCE" }}>
+        <div className="p-3 border-b shrink-0">
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by phone…"
             className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none" />
         </div>
         <div className="overflow-y-auto flex-1">
           {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
-          {error && (
+          {error && allCalls.length === 0 && (
             <div className="p-4 text-sm text-red-600">
               Error loading calls. Check Vapi API key and server route.
               <br />
@@ -115,10 +153,28 @@ function CallsTab() {
               </button>
             );
           })}
+          {hasMore && !isLoading && (
+            <div className="p-3 space-y-1.5">
+              {error && allCalls.length > 0 && (
+                <div className="text-xs text-red-600 text-center">
+                  Failed to load more calls — try again.
+                </div>
+              )}
+              <button
+                onClick={loadMore}
+                disabled={isFetching}
+                className="w-full py-2 text-xs font-semibold rounded-md transition-colors disabled:opacity-50"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #e0d6c8", color: "#86000B" }}
+              >
+                {isFetching ? "Loading…" : "Load more calls"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="overflow-y-auto bg-white">
+      <div className="relative overflow-hidden">
+        <div className="overflow-y-auto bg-white absolute inset-0">
         {!sel ? (
           <div className="h-full flex items-center justify-center text-gray-400 text-sm">Select a call to view</div>
         ) : (
@@ -166,6 +222,7 @@ function CallsTab() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

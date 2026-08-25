@@ -14,7 +14,10 @@ export const Route = createFileRoute("/api/vapi-calls")({
         }
         const url = new URL(request.url);
         const limit = url.searchParams.get("limit") ?? "100";
-        const target = `https://api.vapi.ai/call?assistantId=${ASSISTANT_ID}&limit=${limit}`;
+        const createdAtLt = url.searchParams.get("createdAtLt");
+        const params = new URLSearchParams({ assistantId: ASSISTANT_ID, limit });
+        if (createdAtLt) params.set("createdAtLt", createdAtLt);
+        const target = `https://api.vapi.ai/call?${params.toString()}`;
         const res = await fetch(target, {
           headers: { Authorization: `Bearer ${VAPI_PRIVATE_KEY}` },
         });
