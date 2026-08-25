@@ -49,6 +49,12 @@ function isTest(c: WhatsAppConversation) {
   return c.companyName?.startsWith("Test Dummy Company - ");
 }
 
+// The customer messaged and nobody has sent an outbound ("martin") message since.
+function isNotReplied(c: WhatsAppConversation) {
+  if (c.messages.length === 0) return true;
+  return c.messages[c.messages.length - 1].role !== "martin";
+}
+
 function useWhatsAppConversations() {
   return useQuery({
     queryKey: ["whatsapp-conversations"],
@@ -65,18 +71,21 @@ function useWhatsAppConversations() {
 function WhatsAppTab() {
   const { data, isLoading, error } = useWhatsAppConversations();
   const [search, setSearch] = useState("");
+  const [replyFilter, setReplyFilter] = useState<"all" | "replied" | "not_replied">("all");
   const [activePhone, setActivePhone] = useState<string | null>(null);
 
   // n8n returns one object per lead, already de-duped and sorted newest-first.
-  // Only apply the search filter — never re-sort.
+  // Only apply the search/reply filters — never re-sort.
   const conversations = useMemo(() => {
-    const all = data ?? [];
+    let all = data ?? [];
+    if (replyFilter === "replied") all = all.filter((c) => !isNotReplied(c));
+    if (replyFilter === "not_replied") all = all.filter((c) => isNotReplied(c));
     const q = search.toLowerCase();
     if (!q) return all;
     return all.filter((c) =>
       [c.phone, c.leadName, c.companyName].join(" ").toLowerCase().includes(q)
     );
-  }, [data, search]);
+  }, [data, search, replyFilter]);
 
   const active =
     conversations.find((c) => c.phone === activePhone) ?? conversations[0];
@@ -103,6 +112,28 @@ function WhatsAppTab() {
             placeholder="Search by name, company or number…"
             className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none"
           />
+        </div>
+        <div className="px-3 py-2 border-b shrink-0 flex gap-1.5">
+          {(
+            [
+              { key: "all", label: "All" },
+              { key: "replied", label: "Replied" },
+              { key: "not_replied", label: "Not Replied" },
+            ] as const
+          ).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setReplyFilter(f.key)}
+              className="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
+              style={{
+                color: replyFilter === f.key ? "#FFFFFF" : "#1B2419",
+                backgroundColor: replyFilter === f.key ? "#86000B" : "#FFFFFF",
+                border: "1px solid #e0d6c8",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
         <div className="overflow-y-auto flex-1">
           {isLoading && (

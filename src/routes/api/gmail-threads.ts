@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const maxResults = url.searchParams.get("maxResults") ?? "40";
+        const maxResults = url.searchParams.get("maxResults") ?? "100";
         const pageToken = url.searchParams.get("pageToken") ?? undefined;
 
         try {
@@ -33,6 +33,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
               const date = getHeader(headers, "Date");
               const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL) ? "outbound" : "inbound";
               const isUnread = messages.some((m) => (m.labelIds ?? []).includes("UNREAD"));
+              const isFlagged = messages.some((m: any) => (m.labelIds ?? []).includes("STARRED"));
 
               return {
                 threadId: stub.id,
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 snippet: last?.snippet ?? "",
                 messageCount: messages.length,
                 isUnread,
+                isFlagged,
               };
             }),
           );
