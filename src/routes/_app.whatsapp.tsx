@@ -193,6 +193,12 @@ function WhatsAppTab() {
                 {c.leadName && c.companyName && (
                   <div className="text-[11px] text-gray-500 truncate mt-0.5">
                     {c.companyName}
+                    {c.phone && ` · ${c.phone}`}
+                  </div>
+                )}
+                {!(c.leadName && c.companyName) && c.phone && displayName !== c.phone && (
+                  <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                    {c.phone}
                   </div>
                 )}
                 <div className="text-xs text-gray-500 truncate mt-0.5">
@@ -230,6 +236,11 @@ function WhatsAppTab() {
                 {active.leadName && active.companyName && (
                   <div className="text-white/70 text-xs truncate">
                     {active.companyName}
+                  </div>
+                )}
+                {active.phone && (active.leadName || active.companyName) && (
+                  <div className="text-white/70 text-xs truncate">
+                    {active.phone}
                   </div>
                 )}
                 <div className="text-white/60 text-[10px] mt-0.5">
