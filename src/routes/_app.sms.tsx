@@ -1,88 +1,368 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { fetchSheet, SMS_SHEET_ID, type SmsRow } from "@/lib/sheets";
 
 export const Route = createFileRoute("/_app/sms")({
   component: SmsTab,
 });
 
-function SmsTab() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["sms"],
-    queryFn: () => fetchSheet<SmsRow>(SMS_SHEET_ID, "Sent Log"),
-    refetchInterval: 60000,
+interface SmsMessage {
+  role: "customer" | "martin";
+  content: string;
+  ts: string;
+}
+
+interface SmsConversation {
+  phone: string;
+  leadName: string;
+  companyName: string;
+  channel: string;
+  conversationStage: string;
+  brochureSent: boolean;
+  priceSent: boolean;
+  formSent: boolean;
+  meetingScheduled: boolean;
+  humanEscalated: boolean;
+  discountAttempts: number;
+  duplicateRowCount: number;
+  lastUpdated: string;
+  lastMessageAt: string;
+  lastMessagePreview: string;
+  messages: SmsMessage[];
+}
+
+function formatTs(ts: string): string {
+  if (!ts) return "";
+  try {
+    return new Date(ts).toLocaleString("en-PH", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return ts;
+  }
+}
+
+function isTest(c: SmsConversation) {
+  return c.companyName?.startsWith("Test Dummy Company - ");
+}
+
+// "Replied" means genuine two-way communication happened at some point in the
+// conversation — the lead has at least one message AND Martin has at least
+// one message. The AI agent auto-replies to virtually every inbound message
+// within the same second, so "did the bot fire back a reply" is true almost
+// always and isn't a useful signal; what actually distinguishes conversations
+// is whether the lead ever wrote back at all. Most "not replied" conversations
+// are cold outreach where Martin sent the opener and the lead never responded.
+function hasReplied(c: SmsConversation) {
+  const roles = new Set(c.messages.map((m) => m.role));
+  return roles.has("customer") && roles.has("martin");
+}
+
+function useSmsConversations() {
+  return useQuery({
+    queryKey: ["sms-conversations"],
+    queryFn: async () => {
+      const r = await fetch("/api/sms-conversations");
+      if (!r.ok) throw new Error("SMS fetch failed");
+      const d = await r.json();
+      return (d.conversations ?? []) as SmsConversation[];
+    },
+    refetchInterval: 30000,
   });
+}
+
+function SmsTab() {
+  const { data, isLoading, error } = useSmsConversations();
   const [search, setSearch] = useState("");
-  const [idx, setIdx] = useState<number | null>(null);
+  const [replyFilter, setReplyFilter] = useState<"all" | "replied" | "not_replied">("all");
+  const [activePhone, setActivePhone] = useState<string | null>(null);
 
-  const rows = useMemo(() => {
-    const sorted = [...(data ?? [])].sort((a, b) =>
-      (`${b.Date_Sent} ${b.Time_Sent}`).localeCompare(`${a.Date_Sent} ${a.Time_Sent}`)
-    );
+  // n8n returns one object per lead, already de-duped and sorted newest-first.
+  // Only apply the search/reply filters — never re-sort.
+  const conversations = useMemo(() => {
+    let all = data ?? [];
+    if (replyFilter === "replied") all = all.filter((c) => hasReplied(c));
+    if (replyFilter === "not_replied") all = all.filter((c) => !hasReplied(c));
     const q = search.toLowerCase();
-    if (!q) return sorted;
-    return sorted.filter((r) => [r.Company_Name, r.Phone, r.Message_Sent].join(" ").toLowerCase().includes(q));
-  }, [data, search]);
+    if (!q) return all;
+    return all.filter((c) =>
+      [c.phone, c.leadName, c.companyName].join(" ").toLowerCase().includes(q)
+    );
+  }, [data, search, replyFilter]);
 
-  const sel = idx !== null ? rows[idx] : null;
+  const active =
+    conversations.find((c) => c.phone === activePhone) ?? conversations[0];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-[35%_65%]" style={{ height: "calc(100vh - 7rem - 1rem)" }}>
-      <div className="border-r flex flex-col min-h-0" style={{ backgroundColor: "#FFEBCE" }}>
+    <div
+      className="bg-white rounded-xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-[35%_65%]"
+      style={{ height: "calc(100vh - 7rem - 1rem)" }}
+    >
+      {/* ── Left panel — conversation list ─────────────────────────────── */}
+      <div
+        className="border-r flex flex-col min-h-0"
+        style={{ backgroundColor: "#FFEBCE" }}
+      >
+        <div className="px-4 py-3 border-b shrink-0">
+          <div className="font-black text-lg" style={{ color: "#86000B" }}>
+            SMS
+          </div>
+        </div>
         <div className="p-3 border-b shrink-0">
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by company or phone…"
-            className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, company or number…"
+            className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none"
+          />
+        </div>
+        <div className="px-3 py-2 border-b shrink-0 flex gap-1.5">
+          {(
+            [
+              { key: "all", label: "All" },
+              { key: "replied", label: "Replied" },
+              { key: "not_replied", label: "Not Replied" },
+            ] as const
+          ).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setReplyFilter(f.key)}
+              className="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
+              style={{
+                color: replyFilter === f.key ? "#FFFFFF" : "#1B2419",
+                backgroundColor: replyFilter === f.key ? "#86000B" : "#FFFFFF",
+                border: "1px solid #e0d6c8",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
         <div className="overflow-y-auto flex-1">
-          {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
-          {!isLoading && rows.length === 0 && (
-            <div className="p-8 text-center text-gray-400">
-              <div className="text-2xl mb-2">📱</div>
-              <div className="font-medium">No SMS sent yet</div>
-              <div className="text-sm mt-1">SMS campaign hasn't been triggered.</div>
+          {isLoading && (
+            <div className="p-4 text-sm text-gray-500">Loading…</div>
+          )}
+          {error && (
+            <div className="p-4 text-sm text-red-600">
+              Failed to load conversations.
             </div>
           )}
-          {rows.map((r, i) => {
-            const s = idx === i;
+          {!isLoading && conversations.length === 0 && (
+            <div className="p-4 text-sm text-gray-500">
+              No conversations yet.
+            </div>
+          )}
+          {conversations.map((c) => {
+            const sel = active?.phone === c.phone;
+            const test = isTest(c);
+            const displayName = c.leadName || c.companyName || c.phone;
             return (
-              <button key={i} onClick={() => setIdx(i)}
-                className="w-full text-left px-4 py-3 border-b hover:bg-white"
-                style={{ backgroundColor: s ? "#FFFFFF" : "transparent", borderLeft: s ? "3px solid #86000B" : "3px solid transparent" }}>
-                <div className="flex items-baseline gap-2">
-                  <div className="font-bold text-sm truncate flex-1" style={{ color: "#1B2419" }}>{r.Company_Name}</div>
-                  <div className="text-[10px] text-gray-500">{r.Date_Sent}</div>
+              <button
+                key={c.phone}
+                onClick={() => setActivePhone(c.phone)}
+                className="w-full text-left px-4 py-3 border-b hover:bg-white transition-colors"
+                style={{
+                  backgroundColor: sel ? "#FFFFFF" : "transparent",
+                  borderLeft: sel
+                    ? "3px solid #86000B"
+                    : "3px solid transparent",
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="font-bold text-sm truncate flex-1"
+                    style={{ color: "#1B2419" }}
+                  >
+                    {displayName}
+                  </div>
+                  {test && (
+                    <span
+                      className="shrink-0 px-1.5 rounded text-[9px] font-bold tracking-wide"
+                      style={{ backgroundColor: "#e0e0e0", color: "#888" }}
+                    >
+                      TEST
+                    </span>
+                  )}
+                  <div className="text-[10px] text-gray-400 shrink-0">
+                    {formatTs(c.lastMessageAt)}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">{r.Phone}</div>
+                {c.leadName && c.companyName && (
+                  <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                    {c.companyName}
+                    {c.phone && ` · ${c.phone}`}
+                  </div>
+                )}
+                {!(c.leadName && c.companyName) && c.phone && displayName !== c.phone && (
+                  <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                    {c.phone}
+                  </div>
+                )}
+                <div className="text-xs text-gray-500 truncate mt-0.5">
+                  {c.lastMessagePreview || c.phone}
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="flex flex-col min-h-0" style={{ backgroundColor: "#1B2419" }}>
-        {!sel ? (
-          <div className="h-full flex items-center justify-center text-gray-500 text-sm">Select an SMS to view</div>
+      {/* ── Right panel — chat view ─────────────────────────────────────── */}
+      <div
+        className="flex flex-col min-h-0"
+        style={{ backgroundColor: "#FFF8F0" }}
+      >
+        {!active ? (
+          <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+            Select a conversation
+          </div>
         ) : (
           <>
-            <div className="px-5 py-3 shrink-0" style={{ backgroundColor: "#86000B" }}>
-              <div className="text-white font-bold">{sel.Company_Name}</div>
-              <div className="text-white/80 text-xs">{sel.Phone}</div>
-            </div>
-            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-2">
-              <div className="max-w-md">
-                <div className="bg-gray-700 text-white rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed shadow">
-                  {sel.Message_Sent}
+            {/* Chat header */}
+            <div
+              className="px-5 py-3 flex items-center gap-3 shrink-0"
+              style={{ backgroundColor: "#86000B" }}
+            >
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {(active.leadName || active.phone).slice(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="text-white font-bold leading-tight truncate">
+                  {active.leadName || active.companyName || active.phone}
                 </div>
-                <div className="text-[10px] text-gray-500 mt-1 ml-2">{sel.Date_Sent} {sel.Time_Sent}</div>
+                {active.leadName && active.companyName && (
+                  <div className="text-white/70 text-xs truncate">
+                    {active.companyName}
+                  </div>
+                )}
+                {active.phone && (active.leadName || active.companyName) && (
+                  <div className="text-white/70 text-xs truncate">
+                    {active.phone}
+                  </div>
+                )}
+                <div className="text-white/60 text-[10px] mt-0.5">
+                  Last active {formatTs(active.lastMessageAt)}
+                </div>
               </div>
             </div>
-            <div className="px-5 py-3 bg-black/30 text-xs text-gray-300 flex gap-4 items-center">
-              <span><span className="text-gray-500">Product:</span> {sel.Product_Offered}</span>
-              <span><span className="text-gray-500">Channel:</span> {sel.Channel}</span>
-              <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: "#33673B", color: "white" }}>
-                {sel.Status || "Sent"}
-              </span>
+
+            {/* Status pills */}
+            {(active.conversationStage ||
+              active.brochureSent ||
+              active.priceSent ||
+              active.formSent ||
+              active.meetingScheduled ||
+              active.humanEscalated ||
+              active.discountAttempts > 0) && (
+              <div
+                className="px-4 py-2.5 flex flex-wrap gap-1.5 border-b shrink-0"
+                style={{ backgroundColor: "#FFF8F0" }}
+              >
+                {active.conversationStage && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#f0f0f0", color: "#555" }}
+                  >
+                    {active.conversationStage.replace(/_/g, " ")}
+                  </span>
+                )}
+                {active.brochureSent && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#f3e5f5", color: "#6a1b9a" }}
+                  >
+                    Brochure Sent
+                  </span>
+                )}
+                {active.priceSent && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#e8f5e9", color: "#2e7d32" }}
+                  >
+                    Price Sent
+                  </span>
+                )}
+                {active.formSent && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#e3f2fd", color: "#1565c0" }}
+                  >
+                    Form Sent
+                  </span>
+                )}
+                {active.meetingScheduled && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#e8f5e9", color: "#1b5e20" }}
+                  >
+                    Meeting Booked ✓
+                  </span>
+                )}
+                {active.humanEscalated && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#ffebee", color: "#b71c1c" }}
+                  >
+                    Escalated to Human
+                  </span>
+                )}
+                {active.discountAttempts > 0 && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                    style={{ backgroundColor: "#fff8e1", color: "#e65100" }}
+                  >
+                    {active.discountAttempts} Discount Attempt
+                    {active.discountAttempts > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Message bubbles */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-3">
+              {active.messages.length === 0 && (
+                <div className="text-center text-sm text-gray-400 mt-8">
+                  No messages yet.
+                </div>
+              )}
+              {active.messages.map((m, i) => {
+                const out = m.role === "martin";
+                return (
+                  <div
+                    key={i}
+                    className={`flex ${out ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className="max-w-[70%]">
+                      <div
+                        className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm ${
+                          out
+                            ? "rounded-br-sm text-white"
+                            : "rounded-bl-sm bg-white"
+                        }`}
+                        style={
+                          out
+                            ? { backgroundColor: "#86000B" }
+                            : { color: "#1B2419" }
+                        }
+                      >
+                        <span style={{ whiteSpace: "pre-wrap" }}>
+                          {m.content}
+                        </span>
+                      </div>
+                      <div
+                        className={`text-[10px] text-gray-500 mt-0.5 ${
+                          out ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {formatTs(m.ts)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </>
         )}

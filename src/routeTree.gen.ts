@@ -17,6 +17,7 @@ import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website
 import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
+import { Route as ApiSmsConversationsRouteImport } from './routes/api/sms-conversations'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
 import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
@@ -64,6 +65,11 @@ const ApiVapiCallsRoute = ApiVapiCallsRouteImport.update({
 const ApiTwilioMessagesRoute = ApiTwilioMessagesRouteImport.update({
   id: '/api/twilio-messages',
   path: '/api/twilio-messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSmsConversationsRoute = ApiSmsConversationsRouteImport.update({
+  id: '/api/sms-conversations',
+  path: '/api/sms-conversations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGmailThreadsRoute = ApiGmailThreadsRouteImport.update({
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/api/gmail-flag': typeof ApiGmailFlagRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/api/gmail-flag': typeof ApiGmailFlagRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/api/gmail-flag': typeof ApiGmailFlagRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/api/gmail-flag'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/api/gmail-flag'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/api/gmail-flag'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   ApiGmailFlagRoute: typeof ApiGmailFlagRoute
   ApiGmailThreadRoute: typeof ApiGmailThreadRoute
   ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
+  ApiSmsConversationsRoute: typeof ApiSmsConversationsRoute
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
   ApiVapiRecordingRoute: typeof ApiVapiRecordingRoute
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/api/twilio-messages'
       fullPath: '/api/twilio-messages'
       preLoaderRoute: typeof ApiTwilioMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sms-conversations': {
+      id: '/api/sms-conversations'
+      path: '/api/sms-conversations'
+      fullPath: '/api/sms-conversations'
+      preLoaderRoute: typeof ApiSmsConversationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/gmail-threads': {
@@ -371,6 +391,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGmailFlagRoute: ApiGmailFlagRoute,
   ApiGmailThreadRoute: ApiGmailThreadRoute,
   ApiGmailThreadsRoute: ApiGmailThreadsRoute,
+  ApiSmsConversationsRoute: ApiSmsConversationsRoute,
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,
   ApiVapiRecordingRoute: ApiVapiRecordingRoute,

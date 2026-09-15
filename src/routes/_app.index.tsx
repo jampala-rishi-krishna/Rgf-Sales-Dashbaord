@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { fetchSheet, EMAIL_SHEET_ID, SMS_SHEET_ID, type EmailRow, type SmsRow } from "@/lib/sheets";
+import { fetchSheet, EMAIL_SHEET_ID, type EmailRow } from "@/lib/sheets";
 import { Mail, MessageSquare, Phone, MessageCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 
@@ -23,8 +23,17 @@ interface WAConversation {
 function useEmails() {
   return useQuery({ queryKey: ["emails"], queryFn: () => fetchSheet<EmailRow>(EMAIL_SHEET_ID, "Sent Log"), refetchInterval: 60000 });
 }
-function useSms() {
-  return useQuery({ queryKey: ["sms"], queryFn: () => fetchSheet<SmsRow>(SMS_SHEET_ID, "Sent Log"), refetchInterval: 60000 });
+function useSmsConversations() {
+  return useQuery({
+    queryKey: ["sms-conversations"],
+    queryFn: async () => {
+      const r = await fetch("/api/sms-conversations");
+      if (!r.ok) throw new Error("sms");
+      const d = await r.json();
+      return (d.conversations ?? []) as WAConversation[];
+    },
+    refetchInterval: 60000,
+  });
 }
 function useWhatsApp() {
   return useQuery({
@@ -67,23 +76,26 @@ function isTestWA(c: WAConversation) {
 
 function Overview() {
   const emails = useEmails();
-  const sms = useSms();
+  const sms = useSmsConversations();
   const wa = useWhatsApp();
   const vapi = useVapi();
 
   // Exclude internal QA test contacts from all Home dashboard metrics
   const realWAConvs = (wa.data ?? []).filter((c) => !isTestWA(c));
   const waMessageCount = realWAConvs.reduce((sum, c) => sum + c.messages.length, 0);
+  const realSmsConvs = (sms.data ?? []).filter((c) => !isTestWA(c));
+  const smsMessageCount = realSmsConvs.reduce((sum, c) => sum + c.messages.length, 0);
 
   const kpis = [
     { label: "Emails Sent", value: emails.data?.length ?? 0, Icon: Mail, isLoading: emails.isLoading, isError: emails.isError },
-    { label: "SMS Sent", value: sms.data?.length ?? 0, Icon: MessageSquare, isLoading: sms.isLoading, isError: sms.isError },
+    { label: "SMS Sent", value: smsMessageCount, Icon: MessageSquare, isLoading: sms.isLoading, isError: sms.isError },
     { label: "WhatsApp Messages", value: waMessageCount, Icon: MessageCircle, isLoading: wa.isLoading, isError: wa.isError },
     { label: "Calls Made", value: vapi.data?.length ?? 0, Icon: Phone, isLoading: vapi.isLoading, isError: vapi.isError },
   ];
 
   const emailChart = groupByDate(emails.data ?? [], (r) => r.Date_Sent);
-  const smsChart = groupByDate(sms.data ?? [], (r) => r.Date_Sent);
+  const allSmsMessages = realSmsConvs.flatMap((c) => c.messages);
+  const smsChart = groupByDate(allSmsMessages, (m) => m.ts);
   // Flatten all messages from real (non-test) conversations, group by message timestamp
   const allWAMessages = realWAConvs.flatMap((c) => c.messages);
   const waChart = groupByDate(allWAMessages, (m) => m.ts);
