@@ -4,6 +4,9 @@ import { getGmailAccessToken, gmailFetch, getHeader, GMAIL_BUSINESS_EMAIL } from
 const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 const THREAD_META_CHUNK_SIZE = 15;
 const MAX_RETRIES_ON_429 = 2;
+// Alias mailboxes used by other projects (e.g. the logistics app) — their mail
+// lands in this inbox but doesn't belong on the sales dashboard.
+const EXCLUDED_SENDERS = ["martin.logistics@rareglobalfood.com"];
 
 function chunk<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -40,7 +43,8 @@ export const Route = createFileRoute("/api/gmail-threads")({
         try {
           const token = await getGmailAccessToken();
 
-          const listQuery = new URLSearchParams({ maxResults, q: "-in:chats -in:draft" });
+          const excludedSenders = EXCLUDED_SENDERS.map((s) => `-from:${s} -to:${s}`).join(" ");
+          const listQuery = new URLSearchParams({ maxResults, q: `-in:chats -in:draft ${excludedSenders}` });
           if (pageToken) listQuery.set("pageToken", pageToken);
 
           const listData = await gmailFetch(`/threads?${listQuery.toString()}`, token);
@@ -59,6 +63,14 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 const messages: any[] = meta.messages ?? [];
                 const last = messages[messages.length - 1];
                 const headers = last?.payload?.headers;
+                // Drop the whole thread if any message in it involves an excluded alias,
+                // so old and new logistics mail never shows up.
+                const involvesExcluded = messages.some((m: any) => {
+                  const h = m.payload?.headers;
+                  const addrs = `${getHeader(h, "From")} ${getHeader(h, "To")}`.toLowerCase();
+                  return EXCLUDED_SENDERS.some((s) => addrs.includes(s));
+                });
+                if (involvesExcluded) return null;
                 const from = getHeader(headers, "From");
                 const to = getHeader(headers, "To");
                 const subject = getHeader(headers, "Subject") || "(no subject)";
