@@ -9,31 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
-import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website-chat-sessions'
-import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
-import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
-import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
-import { Route as ApiSmsConversationsRouteImport } from './routes/api/sms-conversations'
-import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
-import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
-import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
-import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
-import { Route as AppWebsiteRouteImport } from './routes/_app.website'
-import { Route as AppSmsRouteImport } from './routes/_app.sms'
-import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
+import { Route as AppEmailRouteImport } from './routes/_app.email'
+import { Route as AppSmsRouteImport } from './routes/_app.sms'
+import { Route as AppWebsiteRouteImport } from './routes/_app.website'
+import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
+import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
+import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
+import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
+import { Route as ApiSmsConversationsRouteImport } from './routes/api/sms-conversations'
+import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
+import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
+import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
+import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website-chat-sessions'
+import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -41,65 +41,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const ApiWhatsappConversationsRoute =
-  ApiWhatsappConversationsRouteImport.update({
-    id: '/api/whatsapp-conversations',
-    path: '/api/whatsapp-conversations',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiWebsiteChatSessionsRoute = ApiWebsiteChatSessionsRouteImport.update({
-  id: '/api/website-chat-sessions',
-  path: '/api/website-chat-sessions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVapiRecordingRoute = ApiVapiRecordingRouteImport.update({
-  id: '/api/vapi-recording',
-  path: '/api/vapi-recording',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVapiCallsRoute = ApiVapiCallsRouteImport.update({
-  id: '/api/vapi-calls',
-  path: '/api/vapi-calls',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiTwilioMessagesRoute = ApiTwilioMessagesRouteImport.update({
-  id: '/api/twilio-messages',
-  path: '/api/twilio-messages',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSmsConversationsRoute = ApiSmsConversationsRouteImport.update({
-  id: '/api/sms-conversations',
-  path: '/api/sms-conversations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGmailThreadsRoute = ApiGmailThreadsRouteImport.update({
-  id: '/api/gmail-threads',
-  path: '/api/gmail-threads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGmailThreadRoute = ApiGmailThreadRouteImport.update({
-  id: '/api/gmail-thread',
-  path: '/api/gmail-thread',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGmailFlagRoute = ApiGmailFlagRouteImport.update({
-  id: '/api/gmail-flag',
-  path: '/api/gmail-flag',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppWhatsappRoute = AppWhatsappRouteImport.update({
-  id: '/whatsapp',
-  path: '/whatsapp',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppWebsiteRoute = AppWebsiteRouteImport.update({
-  id: '/website',
-  path: '/website',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSmsRoute = AppSmsRouteImport.update({
-  id: '/sms',
-  path: '/sms',
+const AppCallsRoute = AppCallsRouteImport.update({
+  id: '/calls',
+  path: '/calls',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmailRoute = AppEmailRouteImport.update({
@@ -107,11 +51,67 @@ const AppEmailRoute = AppEmailRouteImport.update({
   path: '/email',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCallsRoute = AppCallsRouteImport.update({
-  id: '/calls',
-  path: '/calls',
+const AppSmsRoute = AppSmsRouteImport.update({
+  id: '/sms',
+  path: '/sms',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWebsiteRoute = AppWebsiteRouteImport.update({
+  id: '/website',
+  path: '/website',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWhatsappRoute = AppWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiGmailFlagRoute = ApiGmailFlagRouteImport.update({
+  id: '/api/gmail-flag',
+  path: '/api/gmail-flag',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGmailThreadRoute = ApiGmailThreadRouteImport.update({
+  id: '/api/gmail-thread',
+  path: '/api/gmail-thread',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGmailThreadsRoute = ApiGmailThreadsRouteImport.update({
+  id: '/api/gmail-threads',
+  path: '/api/gmail-threads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSmsConversationsRoute = ApiSmsConversationsRouteImport.update({
+  id: '/api/sms-conversations',
+  path: '/api/sms-conversations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTwilioMessagesRoute = ApiTwilioMessagesRouteImport.update({
+  id: '/api/twilio-messages',
+  path: '/api/twilio-messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVapiCallsRoute = ApiVapiCallsRouteImport.update({
+  id: '/api/vapi-calls',
+  path: '/api/vapi-calls',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVapiRecordingRoute = ApiVapiRecordingRouteImport.update({
+  id: '/api/vapi-recording',
+  path: '/api/vapi-recording',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebsiteChatSessionsRoute = ApiWebsiteChatSessionsRouteImport.update({
+  id: '/api/website-chat-sessions',
+  path: '/api/website-chat-sessions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWhatsappConversationsRoute =
+  ApiWhatsappConversationsRouteImport.update({
+    id: '/api/whatsapp-conversations',
+    path: '/api/whatsapp-conversations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -243,18 +243,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app': {
       id: '/_app'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -264,88 +264,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/api/whatsapp-conversations': {
-      id: '/api/whatsapp-conversations'
-      path: '/api/whatsapp-conversations'
-      fullPath: '/api/whatsapp-conversations'
-      preLoaderRoute: typeof ApiWhatsappConversationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/website-chat-sessions': {
-      id: '/api/website-chat-sessions'
-      path: '/api/website-chat-sessions'
-      fullPath: '/api/website-chat-sessions'
-      preLoaderRoute: typeof ApiWebsiteChatSessionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vapi-recording': {
-      id: '/api/vapi-recording'
-      path: '/api/vapi-recording'
-      fullPath: '/api/vapi-recording'
-      preLoaderRoute: typeof ApiVapiRecordingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vapi-calls': {
-      id: '/api/vapi-calls'
-      path: '/api/vapi-calls'
-      fullPath: '/api/vapi-calls'
-      preLoaderRoute: typeof ApiVapiCallsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/twilio-messages': {
-      id: '/api/twilio-messages'
-      path: '/api/twilio-messages'
-      fullPath: '/api/twilio-messages'
-      preLoaderRoute: typeof ApiTwilioMessagesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sms-conversations': {
-      id: '/api/sms-conversations'
-      path: '/api/sms-conversations'
-      fullPath: '/api/sms-conversations'
-      preLoaderRoute: typeof ApiSmsConversationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/gmail-threads': {
-      id: '/api/gmail-threads'
-      path: '/api/gmail-threads'
-      fullPath: '/api/gmail-threads'
-      preLoaderRoute: typeof ApiGmailThreadsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/gmail-thread': {
-      id: '/api/gmail-thread'
-      path: '/api/gmail-thread'
-      fullPath: '/api/gmail-thread'
-      preLoaderRoute: typeof ApiGmailThreadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/gmail-flag': {
-      id: '/api/gmail-flag'
-      path: '/api/gmail-flag'
-      fullPath: '/api/gmail-flag'
-      preLoaderRoute: typeof ApiGmailFlagRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/whatsapp': {
-      id: '/_app/whatsapp'
-      path: '/whatsapp'
-      fullPath: '/whatsapp'
-      preLoaderRoute: typeof AppWhatsappRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/website': {
-      id: '/_app/website'
-      path: '/website'
-      fullPath: '/website'
-      preLoaderRoute: typeof AppWebsiteRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/sms': {
-      id: '/_app/sms'
-      path: '/sms'
-      fullPath: '/sms'
-      preLoaderRoute: typeof AppSmsRouteImport
+    '/_app/calls': {
+      id: '/_app/calls'
+      path: '/calls'
+      fullPath: '/calls'
+      preLoaderRoute: typeof AppCallsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/email': {
@@ -355,12 +278,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmailRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/calls': {
-      id: '/_app/calls'
-      path: '/calls'
-      fullPath: '/calls'
-      preLoaderRoute: typeof AppCallsRouteImport
+    '/_app/sms': {
+      id: '/_app/sms'
+      path: '/sms'
+      fullPath: '/sms'
+      preLoaderRoute: typeof AppSmsRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/website': {
+      id: '/_app/website'
+      path: '/website'
+      fullPath: '/website'
+      preLoaderRoute: typeof AppWebsiteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/whatsapp': {
+      id: '/_app/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof AppWhatsappRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/gmail-flag': {
+      id: '/api/gmail-flag'
+      path: '/api/gmail-flag'
+      fullPath: '/api/gmail-flag'
+      preLoaderRoute: typeof ApiGmailFlagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gmail-thread': {
+      id: '/api/gmail-thread'
+      path: '/api/gmail-thread'
+      fullPath: '/api/gmail-thread'
+      preLoaderRoute: typeof ApiGmailThreadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gmail-threads': {
+      id: '/api/gmail-threads'
+      path: '/api/gmail-threads'
+      fullPath: '/api/gmail-threads'
+      preLoaderRoute: typeof ApiGmailThreadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sms-conversations': {
+      id: '/api/sms-conversations'
+      path: '/api/sms-conversations'
+      fullPath: '/api/sms-conversations'
+      preLoaderRoute: typeof ApiSmsConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/twilio-messages': {
+      id: '/api/twilio-messages'
+      path: '/api/twilio-messages'
+      fullPath: '/api/twilio-messages'
+      preLoaderRoute: typeof ApiTwilioMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vapi-calls': {
+      id: '/api/vapi-calls'
+      path: '/api/vapi-calls'
+      fullPath: '/api/vapi-calls'
+      preLoaderRoute: typeof ApiVapiCallsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vapi-recording': {
+      id: '/api/vapi-recording'
+      path: '/api/vapi-recording'
+      fullPath: '/api/vapi-recording'
+      preLoaderRoute: typeof ApiVapiRecordingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/website-chat-sessions': {
+      id: '/api/website-chat-sessions'
+      path: '/api/website-chat-sessions'
+      fullPath: '/api/website-chat-sessions'
+      preLoaderRoute: typeof ApiWebsiteChatSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/whatsapp-conversations': {
+      id: '/api/whatsapp-conversations'
+      path: '/api/whatsapp-conversations'
+      fullPath: '/api/whatsapp-conversations'
+      preLoaderRoute: typeof ApiWhatsappConversationsRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
