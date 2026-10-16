@@ -7,6 +7,28 @@ const MAX_RETRIES_ON_429 = 2;
 // Alias mailboxes used by other projects (e.g. the logistics app) — their mail
 // lands in this inbox but doesn't belong on the sales dashboard.
 const EXCLUDED_SENDERS = ["martin.logistics@rareglobalfood.com"];
+// Older logistics mail was sent straight from martin@ (before the alias existed),
+// so it can only be recognised by its Gmail label or its subject line.
+const EXCLUDED_LABELS = ["logistics", "logistics-sent"];
+const EXCLUDED_SUBJECTS = [
+  "Driver assignment",
+  "Driver Reply",
+  "IntelliFleet",
+  "Pickup list",
+  "Load ready",
+  "Truck departed",
+  "Order packed",
+  "Assignment Confirmed",
+];
+const EXCLUDED_KEYWORDS = ["RARECHAIN"];
+const EXCLUDED_SUBJECT_RE = new RegExp(EXCLUDED_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "i");
+
+const EXCLUSION_QUERY = [
+  ...EXCLUDED_SENDERS.map((s) => `-from:${s} -to:${s}`),
+  ...EXCLUDED_LABELS.map((l) => `-label:${l}`),
+  ...EXCLUDED_SUBJECTS.map((s) => `-subject:"${s}"`),
+  ...EXCLUDED_KEYWORDS.map((k) => `-${k}`),
+].join(" ");
 
 function chunk<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -43,8 +65,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
         try {
           const token = await getGmailAccessToken();
 
-          const excludedSenders = EXCLUDED_SENDERS.map((s) => `-from:${s} -to:${s}`).join(" ");
-          const listQuery = new URLSearchParams({ maxResults, q: `-in:chats -in:draft ${excludedSenders}` });
+          const listQuery = new URLSearchParams({ maxResults, q: `-in:chats -in:draft ${EXCLUSION_QUERY}` });
           if (pageToken) listQuery.set("pageToken", pageToken);
 
           const listData = await gmailFetch(`/threads?${listQuery.toString()}`, token);
@@ -68,7 +89,11 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 const involvesExcluded = messages.some((m: any) => {
                   const h = m.payload?.headers;
                   const addrs = `${getHeader(h, "From")} ${getHeader(h, "To")}`.toLowerCase();
-                  return EXCLUDED_SENDERS.some((s) => addrs.includes(s));
+                  return (
+                    EXCLUDED_SENDERS.some((s) => addrs.includes(s)) ||
+                    EXCLUDED_SUBJECT_RE.test(getHeader(h, "Subject")) ||
+                    EXCLUDED_KEYWORDS.some((k) => (m.snippet ?? "").toUpperCase().includes(k))
+                  );
                 });
                 if (involvesExcluded) return null;
                 const from = getHeader(headers, "From");
