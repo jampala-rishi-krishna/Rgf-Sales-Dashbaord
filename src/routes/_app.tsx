@@ -1,141 +1,215 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Logo } from "@/lib/brand";
-import { isLoggedIn, setLoggedIn } from "@/lib/auth";
-import { RotateCw, LogOut, Search } from "lucide-react";
+import { useMe } from "@/hooks/use-me";
+import { Sidebar } from "@/components/shell/Sidebar";
+import { TopBar } from "@/components/shell/TopBar";
+import { MobileTabBar } from "@/components/shell/MobileTabBar";
+import { CommandPalette } from "@/components/shell/CommandPalette";
+import { NotificationCenter } from "@/components/shell/NotificationCenter";
+import { NAV, isActive, useShellFeeds } from "@/components/shell/nav";
+import { Skeleton } from "@/components/shared";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
-const TABS = [
-  { to: "/", label: "Home" },
-  { to: "/email", label: "Email" },
-  { to: "/sms", label: "SMS" },
-  { to: "/whatsapp", label: "WhatsApp" },
-  { to: "/website", label: "Website" },
-  { to: "/calls", label: "Calls" },
-] as const;
-
 const INACTIVITY_MS = 5 * 60 * 1000; // 5 minutes
-const WARN_BEFORE_MS = 30 * 1000; // show warning 30 s before logout
+const WARN_BEFORE_MS = 30 * 1000; // warning 30 s before logout
+const COLLAPSE_KEY = "rgf-sidebar-collapsed";
 
 function AppLayout() {
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
+  const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const wall = useRouterState({
+    select: (s) => String((s.location.search as Record<string, unknown>)?.wall ?? "") === "1",
+  });
+  const me = useMe();
+  const user = me.data?.user ?? null;
+  const ready = !!user;
 
+  const [showWarning, setShowWarning] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Auth check ────────────────────────────────────────────────────────────
+  // ── Auth gate (server session) ───────────────────────────────────────────
   useEffect(() => {
-    if (!isLoggedIn()) {
-      navigate({ to: "/login" });
-    } else {
-      setReady(true);
+    if (me.isSuccess && !me.data.user) void navigate({ to: "/login", replace: true });
+  }, [me.isSuccess, me.data, navigate]);
+
+  // ── Sidebar collapse persistence ─────────────────────────────────────────
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+    } catch {
+      /* ignore */
     }
-  }, [navigate]);
+  }, []);
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((c) => {
+      try {
+        localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1");
+      } catch {
+        /* ignore */
+      }
+      return !c;
+    });
+  }, []);
 
-  // ── Inactivity logout ─────────────────────────────────────────────────────
-  const doLogout = useCallback(() => {
-    setLoggedIn(false);
-    navigate({ to: "/login" });
-  }, [navigate]);
+  // ── ⌘K / Ctrl+K ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
+  // ── Logout ───────────────────────────────────────────────────────────────
+  const doLogout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      /* still leave the app */
+    }
+    queryClient.clear();
+    void navigate({ to: "/login", replace: true });
+  }, [navigate, queryClient]);
+
+  // ── Inactivity logout (disabled on Live Wall) ────────────────────────────
   const resetTimer = useCallback(() => {
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
     if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
     setShowWarning(false);
-    // warn at 4:30, log out at 5:00
     warnTimerRef.current = setTimeout(() => setShowWarning(true), INACTIVITY_MS - WARN_BEFORE_MS);
-    logoutTimerRef.current = setTimeout(doLogout, INACTIVITY_MS);
+    logoutTimerRef.current = setTimeout(() => void doLogout(), INACTIVITY_MS);
   }, [doLogout]);
 
   useEffect(() => {
-    if (!ready) return;
-
+    if (!ready || wall) return;
     const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click"] as const;
     events.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
-    resetTimer(); // start the clock on first render
-
+    resetTimer();
     return () => {
       events.forEach((e) => window.removeEventListener(e, resetTimer));
       if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
       if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
+      setShowWarning(false);
     };
-  }, [ready, resetTimer]);
+  }, [ready, wall, resetTimer]);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  if (!ready) return <div className="min-h-screen" style={{ backgroundColor: "#FFEBCE" }} />;
-
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFEBCE" }}>
-      <header className="bg-white border-b-2 sticky top-0 z-10" style={{ borderColor: "#86000B" }}>
-        <div className="px-6 h-16 flex items-center gap-8">
-          <Logo />
-          <nav className="flex gap-1">
-            {TABS.map((t) => {
-              const active = t.to === "/" ? pathname === "/" : pathname.startsWith(t.to);
-              return (
-                <Link
-                  key={t.to}
-                  to={t.to}
-                  className="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
-                  style={{
-                    color: active ? "#FFFFFF" : "#1B2419",
-                    backgroundColor: active ? "#86000B" : "transparent",
-                  }}
-                >
-                  {t.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                placeholder="Search…"
-                className="pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none w-56"
-              />
-            </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="p-2 rounded-md hover:bg-gray-100"
-              title="Reload"
-            >
-              <RotateCw className="w-4 h-4" style={{ color: "#86000B" }} />
-            </button>
-            <button
-              onClick={doLogout}
-              className="px-3 py-1.5 text-sm font-semibold flex items-center gap-1.5 rounded-md text-white"
-              style={{ backgroundColor: "#86000B" }}
-            >
-              <LogOut className="w-4 h-4" /> Logout
-            </button>
+  if (!ready) {
+    return (
+      <div className="flex min-h-dvh bg-background">
+        <div className="hidden w-60 border-r bg-surface p-3 md:block">
+          <Skeleton className="mb-6 h-8 w-28" />
+          {Array.from({ length: 9 }).map((_, i) => (
+            <Skeleton key={i} className="mb-2 h-8 w-full" />
+          ))}
+        </div>
+        <div className="flex-1 p-6">
+          <Skeleton className="mb-6 h-8 w-64" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
           </div>
         </div>
-      </header>
+      </div>
+    );
+  }
 
-      <main className="p-6">
-        <Outlet />
-      </main>
+  return (
+    <ShellFrame
+      pathname={pathname}
+      wall={wall}
+      collapsed={collapsed}
+      onToggleCollapsed={toggleCollapsed}
+      paletteOpen={paletteOpen}
+      setPaletteOpen={setPaletteOpen}
+      user={user}
+      dryRun={me.data?.dryRun ?? true}
+      onLogout={() => void doLogout()}
+      showWarning={showWarning}
+      onStay={resetTimer}
+    />
+  );
+}
 
-      {/* ── Inactivity warning banner ──────────────────────────────────────── */}
-      {showWarning && (
+/** Split so feed polling only starts once the session is confirmed. */
+function ShellFrame(p: {
+  pathname: string;
+  wall: boolean;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+  paletteOpen: boolean;
+  setPaletteOpen: (o: boolean) => void;
+  user: { name: string; email: string; role: string };
+  dryRun: boolean;
+  onLogout: () => void;
+  showWarning: boolean;
+  onStay: () => void;
+}) {
+  const feeds = useShellFeeds();
+  const current = NAV.find((n) => isActive(p.pathname, n.to));
+  const title = current?.to === "/" ? "Mission Control" : (current?.label ?? "RGF");
+
+  return (
+    <div className="flex min-h-dvh bg-background text-foreground">
+      <Sidebar
+        pathname={p.pathname}
+        collapsed={p.collapsed}
+        onToggle={p.onToggleCollapsed}
+        counts={feeds.counts}
+        wall={p.wall}
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar
+          title={title}
+          onOpenPalette={() => p.setPaletteOpen(true)}
+          fresh={feeds.fresh}
+          newest={feeds.newest}
+          dryRun={p.dryRun}
+          user={p.user}
+          onLogout={p.onLogout}
+          wall={p.wall}
+          notifications={
+            <NotificationCenter
+              feeds={{ whatsapp: feeds.wa, sms: feeds.sms, viber: feeds.viber }}
+            />
+          }
+        />
+        <main className="min-w-0 flex-1 px-3 pt-4 pb-24 md:px-6 md:pt-6 md:pb-6">
+          <Outlet />
+        </main>
+      </div>
+
+      <MobileTabBar pathname={p.pathname} counts={feeds.counts} wall={p.wall} />
+      <CommandPalette
+        open={p.paletteOpen}
+        onOpenChange={p.setPaletteOpen}
+        feeds={{ whatsapp: feeds.wa, sms: feeds.sms, viber: feeds.viber }}
+        wall={p.wall}
+      />
+
+      {p.showWarning && (
         <div
-          className="fixed bottom-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between shadow-lg"
-          style={{ backgroundColor: "#86000B" }}
+          role="alertdialog"
+          aria-live="assertive"
+          className="fixed inset-x-3 bottom-20 z-50 flex items-center justify-between gap-3 rounded-xl bg-[var(--rgf-red)] px-4 py-3 text-white shadow-lg md:inset-x-auto md:right-6 md:bottom-6 md:w-[420px]"
         >
-          <span className="text-sm text-white">
-            You'll be signed out in 30 seconds due to inactivity.
-          </span>
+          <span className="text-sm">You'll be signed out in 30 seconds due to inactivity.</span>
           <button
-            onClick={resetTimer}
-            className="ml-4 px-4 py-1.5 rounded-md text-sm font-semibold bg-white hover:bg-gray-100 transition-colors"
-            style={{ color: "#86000B" }}
+            type="button"
+            onClick={p.onStay}
+            className="shrink-0 rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-[var(--rgf-red)] hover:bg-white/90"
           >
             Stay signed in
           </button>

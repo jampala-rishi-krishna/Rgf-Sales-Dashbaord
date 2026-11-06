@@ -8,6 +8,8 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { THEME_INIT_SCRIPT } from "@/hooks/use-theme";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -34,12 +36,13 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+function ErrorComponent({ error: rawError, reset }: { error: unknown; reset: () => void }) {
+  console.error(rawError);
   const router = useRouter();
   useEffect(() => {
+    const error = rawError instanceof Error ? rawError : new Error(String(rawError));
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+  }, [rawError]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -74,10 +77,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap",
+      },
+      { rel: "stylesheet", href: appCss },
+    ],
     meta: [
       { charSet: "UTF-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1.0" },
+      { name: "viewport", content: "width=device-width, initial-scale=1.0, viewport-fit=cover" },
+      { title: "RGF Mission Control" },
+      { name: "theme-color", content: "#86000B" },
     ],
   }),
   component: RootComponent,
@@ -89,13 +102,16 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Applies persisted dark mode before paint. Static string, no user input. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
           <Outlet />
+          <Toaster position="top-right" richColors closeButton />
         </QueryClientProvider>
         <Scripts />
       </body>
