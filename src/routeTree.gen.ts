@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
+import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppCrmRouteImport } from './routes/_app.crm'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
@@ -61,6 +62,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppCallsRoute = AppCallsRouteImport.update({
   id: '/calls',
   path: '/calls',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsRoute = AppCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCrmRoute = AppCrmRouteImport.update({
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
+  '/campaigns': typeof AppCampaignsRoute
   '/crm': typeof AppCrmRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
+  '/campaigns': typeof AppCampaignsRoute
   '/crm': typeof AppCrmRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/calls': typeof AppCallsRoute
+  '/_app/campaigns': typeof AppCampaignsRoute
   '/_app/crm': typeof AppCrmRoute
   '/_app/email': typeof AppEmailRoute
   '/_app/inbox': typeof AppInboxRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/calls'
+    | '/campaigns'
     | '/crm'
     | '/email'
     | '/inbox'
@@ -362,6 +372,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/calls'
+    | '/campaigns'
     | '/crm'
     | '/email'
     | '/inbox'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/calls'
+    | '/_app/campaigns'
     | '/_app/crm'
     | '/_app/email'
     | '/_app/inbox'
@@ -487,6 +499,13 @@ declare module '@tanstack/react-router' {
       path: '/calls'
       fullPath: '/calls'
       preLoaderRoute: typeof AppCallsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns': {
+      id: '/_app/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof AppCampaignsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/crm': {
@@ -704,6 +723,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCallsRoute: typeof AppCallsRoute
+  AppCampaignsRoute: typeof AppCampaignsRoute
   AppCrmRoute: typeof AppCrmRoute
   AppEmailRoute: typeof AppEmailRoute
   AppInboxRoute: typeof AppInboxRoute
@@ -716,6 +736,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCallsRoute: AppCallsRoute,
+  AppCampaignsRoute: AppCampaignsRoute,
   AppCrmRoute: AppCrmRoute,
   AppEmailRoute: AppEmailRoute,
   AppInboxRoute: AppInboxRoute,
