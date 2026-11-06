@@ -31,13 +31,18 @@ export const Route = createFileRoute("/api/crm/pre-lead")({
           }
           const { base, headers } = n8nConfig();
           if (base) {
-            const res = await fetch(`${base}/dashboard-pre-lead?id=${encodeURIComponent(id)}`, {
+            // n8n "[DASHBOARD] Get Pre-Leads Feed" serves one lead on the same path via ?id=.
+            const res = await fetch(`${base}/dashboard-pre-leads?id=${encodeURIComponent(id)}`, {
               headers,
               signal: AbortSignal.timeout(15_000),
             });
             if (res.ok) {
               const d = (await res.json()) as Record<string, unknown> | Record<string, unknown>[];
-              const row = Array.isArray(d) ? d[0] : ((d.lead as Record<string, unknown>) ?? d);
+              const row = Array.isArray(d)
+                ? d[0]
+                : d.ok === false
+                  ? undefined
+                  : ((d.lead as Record<string, unknown>) ?? d);
               if (row) return json({ ok: true, connected: true, lead: normalizePreLead(row) });
             }
           }
