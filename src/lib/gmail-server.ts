@@ -6,6 +6,25 @@ const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET!;
 const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN!;
 export const GMAIL_BUSINESS_EMAIL = "martin@rareglobalfood.com";
 
+// Minimal shapes of the Gmail API responses this app reads.
+export type GmailHeader = { name: string; value: string };
+export type GmailMessagePart = {
+  mimeType?: string;
+  headers?: GmailHeader[];
+  body?: { data?: string };
+  parts?: GmailMessagePart[];
+};
+export type GmailMessage = {
+  id: string;
+  threadId?: string;
+  labelIds?: string[];
+  snippet?: string;
+  payload?: GmailMessagePart;
+};
+export type GmailThread = { id: string; messages?: GmailMessage[] };
+export type GmailThreadList = { threads?: { id: string }[]; nextPageToken?: string };
+export type GmailLabel = { id: string; name: string };
+
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
 export async function getGmailAccessToken(): Promise<string> {
@@ -30,14 +49,14 @@ export async function getGmailAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-export async function gmailFetch(path: string, token: string): Promise<any> {
+export async function gmailFetch<T>(path: string, token: string): Promise<T> {
   const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     throw new Error(`Gmail API ${path} failed: ${res.status} ${await res.text()}`);
   }
-  return res.json();
+  return (await res.json()) as T;
 }
 
 export function decodeBase64Url(input: string): string {
@@ -45,7 +64,7 @@ export function decodeBase64Url(input: string): string {
   return Buffer.from(normalized, "base64").toString("utf-8");
 }
 
-export function extractHtmlBody(payload: any): string {
+export function extractHtmlBody(payload: GmailMessagePart | undefined): string {
   if (!payload) return "";
   if (payload.mimeType === "text/html" && payload.body?.data) {
     return decodeBase64Url(payload.body.data);
@@ -70,10 +89,7 @@ export function extractHtmlBody(payload: any): string {
   return "";
 }
 
-export function getHeader(
-  headers: { name: string; value: string }[] | undefined,
-  name: string,
-): string {
+export function getHeader(headers: GmailHeader[] | undefined, name: string): string {
   return (headers ?? []).find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? "";
 }
 
@@ -92,14 +108,14 @@ export type GmailSendInput = {
   inReplyTo?: string;
 };
 
-async function gmailPost(path: string, token: string, body: unknown): Promise<any> {
+async function gmailPost<T>(path: string, token: string, body: unknown): Promise<T> {
   const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me${path}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Gmail API POST ${path} failed: ${res.status} ${await res.text()}`);
-  return res.json();
+  return (await res.json()) as T;
 }
 
 function encodeHeaderWord(value: string): string {
@@ -149,12 +165,12 @@ export function buildRawMime(opts: {
 
 /** Returns the id of a user label, creating it if missing. */
 export async function ensureGmailLabel(name: string, token: string): Promise<string> {
-  const list = await gmailFetch("/labels", token);
+  const list = await gmailFetch<{ labels?: GmailLabel[] }>("/labels", token);
   const found = (list.labels ?? []).find(
-    (l: any) => String(l.name).toLowerCase() === name.toLowerCase(),
+    (l) => String(l.name).toLowerCase() === name.toLowerCase(),
   );
   if (found) return found.id;
-  const created = await gmailPost("/labels", token, {
+  const created = await gmailPost<GmailLabel>("/labels", token, {
     name,
     labelListVisibility: "labelShow",
     messageListVisibility: "show",
@@ -177,11 +193,11 @@ export async function sendGmailMessage(
 
   if (input.threadId) {
     try {
-      const meta = await gmailFetch(
+      const meta = await gmailFetch<GmailThread>(
         `/threads/${encodeURIComponent(input.threadId)}?format=metadata&metadataHeaders=Message-ID&metadataHeaders=References`,
         token,
       );
-      const msgs: any[] = meta.messages ?? [];
+      const msgs = meta.messages ?? [];
       const last = msgs[msgs.length - 1];
       const lastId = getHeader(last?.payload?.headers, "Message-ID");
       const lastRefs = getHeader(last?.payload?.headers, "References");
@@ -194,7 +210,7 @@ export async function sendGmailMessage(
   }
 
   const raw = buildRawMime({ ...input, inReplyTo, references });
-  const sent = await gmailPost(
+  const sent = await gmailPost<{ id: string; threadId: string }>(
     "/messages/send",
     token,
     input.threadId ? { raw, threadId: input.threadId } : { raw },

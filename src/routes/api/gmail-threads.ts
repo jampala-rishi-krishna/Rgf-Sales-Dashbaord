@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   getGmailAccessToken,
   gmailFetch,
+  type GmailThread,
+  type GmailThreadList,
   getHeader,
   GMAIL_BUSINESS_EMAIL,
 } from "@/lib/gmail-server";
@@ -44,14 +46,30 @@ function chunk<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
+type ThreadSummary = {
+  threadId: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  direction: "inbound" | "outbound";
+  snippet: string;
+  messageCount: number;
+  isUnread: boolean;
+  isFlagged: boolean;
+};
+
 // Fetches one thread's metadata, retrying with backoff on Gmail's 429 rate-limit
 // response. Returns null (instead of throwing) if it never succeeds, so one
 // rate-limited thread doesn't take down the whole batch.
-async function fetchThreadMetaWithRetry(threadId: string, token: string): Promise<any | null> {
+async function fetchThreadMetaWithRetry(
+  threadId: string,
+  token: string,
+): Promise<GmailThread | null> {
   const url = `${GMAIL_API_BASE}/threads/${threadId}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date`;
   for (let attempt = 0; attempt <= MAX_RETRIES_ON_429; attempt++) {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) return res.json();
+    if (res.ok) return (await res.json()) as GmailThread;
     if (res.status === 429 && attempt < MAX_RETRIES_ON_429) {
       await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
       continue;
@@ -81,25 +99,28 @@ export const Route = createFileRoute("/api/gmail-threads")({
           });
           if (pageToken) listQuery.set("pageToken", pageToken);
 
-          const listData = await gmailFetch(`/threads?${listQuery.toString()}`, token);
+          const listData = await gmailFetch<GmailThreadList>(
+            `/threads?${listQuery.toString()}`,
+            token,
+          );
           const threadStubs: { id: string }[] = listData.threads ?? [];
 
           // Fetch per-thread metadata in small concurrent batches rather than all at
           // once — Gmail's per-user rate limit rejects a single Promise.all over 100
           // simultaneous requests with 429s, which used to fail the entire response.
-          const threads: any[] = [];
+          const threads: ThreadSummary[] = [];
           for (const batch of chunk(threadStubs, THREAD_META_CHUNK_SIZE)) {
             const batchResults = await Promise.all(
               batch.map(async (stub) => {
                 const meta = await fetchThreadMetaWithRetry(stub.id, token);
                 if (!meta) return null;
 
-                const messages: any[] = meta.messages ?? [];
+                const messages = meta.messages ?? [];
                 const last = messages[messages.length - 1];
                 const headers = last?.payload?.headers;
                 // Drop the whole thread if any message in it involves an excluded alias,
                 // so old and new logistics mail never shows up.
-                const involvesExcluded = messages.some((m: any) => {
+                const involvesExcluded = messages.some((m) => {
                   const h = m.payload?.headers;
                   const addrs = `${getHeader(h, "From")} ${getHeader(h, "To")}`.toLowerCase();
                   return (
@@ -117,7 +138,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
                   ? "outbound"
                   : "inbound";
                 const isUnread = messages.some((m) => (m.labelIds ?? []).includes("UNREAD"));
-                const isFlagged = messages.some((m: any) => (m.labelIds ?? []).includes("STARRED"));
+                const isFlagged = messages.some((m) => (m.labelIds ?? []).includes("STARRED"));
 
                 return {
                   threadId: stub.id,
@@ -133,7 +154,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 };
               }),
             );
-            threads.push(...batchResults.filter((t) => t !== null));
+            threads.push(...batchResults.filter((t): t is ThreadSummary => t !== null));
           }
 
           threads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
