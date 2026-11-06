@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
+import { Route as AppCrmRouteImport } from './routes/_app.crm'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
@@ -40,6 +41,8 @@ import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiCrmPreLeadRouteImport } from './routes/api/crm/pre-lead'
+import { Route as ApiCrmPreLeadsRouteImport } from './routes/api/crm/pre-leads'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -58,6 +61,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppCallsRoute = AppCallsRouteImport.update({
   id: '/calls',
   path: '/calls',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmRoute = AppCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmailRoute = AppEmailRouteImport.update({
@@ -196,11 +204,22 @@ const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
   path: '/api/auth/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCrmPreLeadRoute = ApiCrmPreLeadRouteImport.update({
+  id: '/api/crm/pre-lead',
+  path: '/api/crm/pre-lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCrmPreLeadsRoute = ApiCrmPreLeadsRouteImport.update({
+  id: '/api/crm/pre-leads',
+  path: '/api/crm/pre-leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
+  '/crm': typeof AppCrmRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
@@ -228,10 +247,13 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/pre-lead': typeof ApiCrmPreLeadRoute
+  '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
+  '/crm': typeof AppCrmRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
@@ -260,12 +282,15 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/pre-lead': typeof ApiCrmPreLeadRoute
+  '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/calls': typeof AppCallsRoute
+  '/_app/crm': typeof AppCrmRoute
   '/_app/email': typeof AppEmailRoute
   '/_app/inbox': typeof AppInboxRoute
   '/_app/sms': typeof AppSmsRoute
@@ -294,6 +319,8 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/pre-lead': typeof ApiCrmPreLeadRoute
+  '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -301,6 +328,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/calls'
+    | '/crm'
     | '/email'
     | '/inbox'
     | '/sms'
@@ -328,10 +356,13 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/crm/pre-lead'
+    | '/api/crm/pre-leads'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/calls'
+    | '/crm'
     | '/email'
     | '/inbox'
     | '/sms'
@@ -360,11 +391,14 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/crm/pre-lead'
+    | '/api/crm/pre-leads'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/calls'
+    | '/_app/crm'
     | '/_app/email'
     | '/_app/inbox'
     | '/_app/sms'
@@ -393,6 +427,8 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/crm/pre-lead'
+    | '/api/crm/pre-leads'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -419,6 +455,8 @@ export interface RootRouteChildren {
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiCrmPreLeadRoute: typeof ApiCrmPreLeadRoute
+  ApiCrmPreLeadsRoute: typeof ApiCrmPreLeadsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -449,6 +487,13 @@ declare module '@tanstack/react-router' {
       path: '/calls'
       fullPath: '/calls'
       preLoaderRoute: typeof AppCallsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/crm': {
+      id: '/_app/crm'
+      path: '/crm'
+      fullPath: '/crm'
+      preLoaderRoute: typeof AppCrmRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/email': {
@@ -640,11 +685,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/crm/pre-lead': {
+      id: '/api/crm/pre-lead'
+      path: '/api/crm/pre-lead'
+      fullPath: '/api/crm/pre-lead'
+      preLoaderRoute: typeof ApiCrmPreLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/crm/pre-leads': {
+      id: '/api/crm/pre-leads'
+      path: '/api/crm/pre-leads'
+      fullPath: '/api/crm/pre-leads'
+      preLoaderRoute: typeof ApiCrmPreLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteChildren {
   AppCallsRoute: typeof AppCallsRoute
+  AppCrmRoute: typeof AppCrmRoute
   AppEmailRoute: typeof AppEmailRoute
   AppInboxRoute: typeof AppInboxRoute
   AppSmsRoute: typeof AppSmsRoute
@@ -656,6 +716,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCallsRoute: AppCallsRoute,
+  AppCrmRoute: AppCrmRoute,
   AppEmailRoute: AppEmailRoute,
   AppInboxRoute: AppInboxRoute,
   AppSmsRoute: AppSmsRoute,
@@ -691,6 +752,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiCrmPreLeadRoute: ApiCrmPreLeadRoute,
+  ApiCrmPreLeadsRoute: ApiCrmPreLeadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
