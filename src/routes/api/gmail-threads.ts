@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   getGmailAccessToken,
+  GmailConnectionError,
   gmailFetch,
   type GmailThread,
   type GmailThreadList,
@@ -168,6 +169,12 @@ export const Route = createFileRoute("/api/gmail-threads")({
           );
         } catch (err) {
           console.error("[gmail-threads] error:", err);
+          if (err instanceof GmailConnectionError) {
+            return new Response(JSON.stringify({ error: err.message, code: err.code }), {
+              status: 503,
+              headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+            });
+          }
           return new Response(JSON.stringify({ error: "Failed to list Gmail threads" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },

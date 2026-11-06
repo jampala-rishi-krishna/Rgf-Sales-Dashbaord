@@ -39,6 +39,8 @@ Give the manager `admin` and the sales team `agent`.
 
 ## 3. Gmail re-authorisation
 
+If Google returns `invalid_client` ("The OAuth client was not found"), check `GMAIL_CLIENT_ID` and `GMAIL_CLIENT_SECRET` against an existing OAuth client in Google Cloud Console. A new refresh token alone will not repair an invalid or deleted client. Authorize the sales mailbox using that same client, then update all three `GMAIL_*` values in the Vercel environment serving the dashboard and redeploy. For `invalid_grant`, reconnect the mailbox to replace the expired or revoked refresh token. Do not paste credentials into chat or commit them to Git.
+
 **Check what the current token can do.** Get an access token from the refresh token, then:
 ```bash
 curl "https://oauth2.googleapis.com/tokeninfo?access_token=ACCESS_TOKEN"

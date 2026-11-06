@@ -1,10 +1,13 @@
 // Server-only Gmail API helpers. Never import this from client-side code
 // (it reads process.env secrets and has no business being in the browser bundle).
 
-const CLIENT_ID = process.env.GMAIL_CLIENT_ID!;
-const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET!;
-const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN!;
 export const GMAIL_BUSINESS_EMAIL = "martin@rareglobalfood.com";
+
+export class GmailConnectionError extends Error {
+  constructor(message: string, readonly code: string) {
+    super(message);
+  }
+}
 
 // Minimal shapes of the Gmail API responses this app reads.
 export type GmailHeader = { name: string; value: string };
@@ -31,18 +34,41 @@ export async function getGmailAccessToken(): Promise<string> {
   if (cachedToken && cachedToken.expiresAt > Date.now() + 30_000) {
     return cachedToken.token;
   }
+  const clientId = process.env.GMAIL_CLIENT_ID?.trim();
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN?.trim();
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new GmailConnectionError(
+      "Gmail is not configured. Ask your administrator to connect the sales mailbox.",
+      "gmail_not_configured",
+    );
+  }
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      refresh_token: REFRESH_TOKEN,
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
       grant_type: "refresh_token",
     }),
+    signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) {
-    throw new Error(`Gmail token refresh failed: ${res.status} ${await res.text()}`);
+    const failure = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (failure?.error === "invalid_client" || failure?.error === "unauthorized_client") {
+      throw new GmailConnectionError(
+        "Gmail's OAuth client is invalid. Ask your administrator to update the Gmail connection settings and reconnect the sales mailbox.",
+        "gmail_invalid_client",
+      );
+    }
+    if (failure?.error === "invalid_grant") {
+      throw new GmailConnectionError(
+        "Gmail authorization has expired or was revoked. Ask your administrator to reconnect the sales mailbox.",
+        "gmail_reconnect_required",
+      );
+    }
+    throw new Error(`Gmail token refresh failed (${res.status})`);
   }
   const data = (await res.json()) as { access_token: string; expires_in: number };
   cachedToken = { token: data.access_token, expiresAt: Date.now() + data.expires_in * 1000 };

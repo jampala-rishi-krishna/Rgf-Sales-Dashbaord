@@ -26,6 +26,12 @@ interface GmailThreadsResponse {
   nextPageToken: string | null;
 }
 
+class GmailListError extends Error {
+  constructor(message: string, readonly retryable: boolean) {
+    super(message);
+  }
+}
+
 // Same request/pageToken contract as before the redesign: 40 per Gmail page,
 // first page auto-refreshes every 60s, older pages are fetched on demand.
 function useGmailThreads(pageToken: string | null) {
@@ -35,14 +41,30 @@ function useGmailThreads(pageToken: string | null) {
       const response = await fetch(
         `/api/gmail-threads?maxResults=40${pageToken ? `&pageToken=${pageToken}` : ""}`,
       );
-      if (!response.ok) throw new Error("Gmail thread list failed");
+      if (!response.ok) {
+        const failure = (await response.json().catch(() => null)) as {
+          code?: string;
+          error?: string;
+        } | null;
+        if (failure?.code?.startsWith("gmail_") && typeof failure.error === "string") {
+          throw new GmailListError(failure.error, false);
+        }
+        if (response.status === 401) {
+          throw new GmailListError("Your session has expired. Sign in again to load your email.", false);
+        }
+        throw new GmailListError("Couldn't reach Gmail. Please refresh to try again.", true);
+      }
       const data = await response.json();
       return {
         threads: (data.threads ?? []) as GmailThreadSummary[],
         nextPageToken: (data.nextPageToken ?? null) as string | null,
       } as GmailThreadsResponse;
     },
-    refetchInterval: pageToken === null ? 60000 : false,
+    retry: (count, error) => !(error instanceof GmailListError && !error.retryable) && count < 2,
+    refetchInterval: (query) =>
+      query.state.error instanceof GmailListError && !query.state.error.retryable
+        ? false
+        : pageToken === null ? 60000 : false,
   });
 }
 
@@ -155,7 +177,9 @@ function EmailTab() {
   }, [selectedId, pageThreads, cursor]);
 
   const listError = error
-    ? allThreads.length
+    ? error instanceof GmailListError
+      ? error.message
+      : allThreads.length
       ? "Failed to load more emails — try again."
       : "Couldn't reach Gmail. Check the connection and refresh."
     : null;
