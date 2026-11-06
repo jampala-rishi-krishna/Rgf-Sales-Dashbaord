@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getGmailAccessToken, gmailFetch, extractHtmlBody, getHeader, GMAIL_BUSINESS_EMAIL } from "@/lib/gmail-server";
+import {
+  getGmailAccessToken,
+  gmailFetch,
+  extractHtmlBody,
+  getHeader,
+  GMAIL_BUSINESS_EMAIL,
+} from "@/lib/gmail-server";
 
 export const Route = createFileRoute("/api/gmail-thread")({
   server: {
@@ -24,7 +30,9 @@ export const Route = createFileRoute("/api/gmail-thread")({
             const to = getHeader(headers, "To");
             const date = getHeader(headers, "Date");
             const subject = getHeader(headers, "Subject");
-            const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL) ? "outbound" : "inbound";
+            const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL)
+              ? "outbound"
+              : "inbound";
             return {
               id: m.id,
               from,
@@ -37,7 +45,9 @@ export const Route = createFileRoute("/api/gmail-thread")({
             };
           });
 
-          messages.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          messages.sort(
+            (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          );
 
           return new Response(JSON.stringify({ threadId, messages }), {
             status: 200,

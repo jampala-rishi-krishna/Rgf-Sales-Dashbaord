@@ -89,12 +89,11 @@ function SmsTab() {
     const q = search.toLowerCase();
     if (!q) return all;
     return all.filter((c) =>
-      [c.phone, c.leadName, c.companyName].join(" ").toLowerCase().includes(q)
+      [c.phone, c.leadName, c.companyName].join(" ").toLowerCase().includes(q),
     );
   }, [data, search, replyFilter]);
 
-  const active =
-    conversations.find((c) => c.phone === activePhone) ?? conversations[0];
+  const active = conversations.find((c) => c.phone === activePhone) ?? conversations[0];
 
   return (
     <div
@@ -102,10 +101,7 @@ function SmsTab() {
       style={{ height: "calc(100vh - 7rem - 1rem)" }}
     >
       {/* ── Left panel — conversation list ─────────────────────────────── */}
-      <div
-        className="border-r flex flex-col min-h-0"
-        style={{ backgroundColor: "#FFEBCE" }}
-      >
+      <div className="border-r flex flex-col min-h-0" style={{ backgroundColor: "#FFEBCE" }}>
         <div className="px-4 py-3 border-b shrink-0">
           <div className="font-black text-lg" style={{ color: "#86000B" }}>
             SMS
@@ -142,18 +138,10 @@ function SmsTab() {
           ))}
         </div>
         <div className="overflow-y-auto flex-1">
-          {isLoading && (
-            <div className="p-4 text-sm text-gray-500">Loading…</div>
-          )}
-          {error && (
-            <div className="p-4 text-sm text-red-600">
-              Failed to load conversations.
-            </div>
-          )}
+          {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
+          {error && <div className="p-4 text-sm text-red-600">Failed to load conversations.</div>}
           {!isLoading && conversations.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">
-              No conversations yet.
-            </div>
+            <div className="p-4 text-sm text-gray-500">No conversations yet.</div>
           )}
           {conversations.map((c) => {
             const sel = active?.phone === c.phone;
@@ -166,16 +154,11 @@ function SmsTab() {
                 className="w-full text-left px-4 py-3 border-b hover:bg-white transition-colors"
                 style={{
                   backgroundColor: sel ? "#FFFFFF" : "transparent",
-                  borderLeft: sel
-                    ? "3px solid #86000B"
-                    : "3px solid transparent",
+                  borderLeft: sel ? "3px solid #86000B" : "3px solid transparent",
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <div
-                    className="font-bold text-sm truncate flex-1"
-                    style={{ color: "#1B2419" }}
-                  >
+                  <div className="font-bold text-sm truncate flex-1" style={{ color: "#1B2419" }}>
                     {displayName}
                   </div>
                   {test && (
@@ -197,9 +180,7 @@ function SmsTab() {
                   </div>
                 )}
                 {!(c.leadName && c.companyName) && c.phone && displayName !== c.phone && (
-                  <div className="text-[11px] text-gray-500 truncate mt-0.5">
-                    {c.phone}
-                  </div>
+                  <div className="text-[11px] text-gray-500 truncate mt-0.5">{c.phone}</div>
                 )}
                 <div className="text-xs text-gray-500 truncate mt-0.5">
                   {c.lastMessagePreview || c.phone}
@@ -211,10 +192,7 @@ function SmsTab() {
       </div>
 
       {/* ── Right panel — chat view ─────────────────────────────────────── */}
-      <div
-        className="flex flex-col min-h-0"
-        style={{ backgroundColor: "#FFF8F0" }}
-      >
+      <div className="flex flex-col min-h-0" style={{ backgroundColor: "#FFF8F0" }}>
         {!active ? (
           <div className="h-full flex items-center justify-center text-gray-400 text-sm">
             Select a conversation
@@ -234,14 +212,10 @@ function SmsTab() {
                   {active.leadName || active.companyName || active.phone}
                 </div>
                 {active.leadName && active.companyName && (
-                  <div className="text-white/70 text-xs truncate">
-                    {active.companyName}
-                  </div>
+                  <div className="text-white/70 text-xs truncate">{active.companyName}</div>
                 )}
                 {active.phone && (active.leadName || active.companyName) && (
-                  <div className="text-white/70 text-xs truncate">
-                    {active.phone}
-                  </div>
+                  <div className="text-white/70 text-xs truncate">{active.phone}</div>
                 )}
                 <div className="text-white/60 text-[10px] mt-0.5">
                   Last active {formatTs(active.lastMessageAt)}
@@ -324,33 +298,20 @@ function SmsTab() {
             {/* Message bubbles */}
             <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-3">
               {active.messages.length === 0 && (
-                <div className="text-center text-sm text-gray-400 mt-8">
-                  No messages yet.
-                </div>
+                <div className="text-center text-sm text-gray-400 mt-8">No messages yet.</div>
               )}
               {active.messages.map((m, i) => {
                 const out = m.role === "martin";
                 return (
-                  <div
-                    key={i}
-                    className={`flex ${out ? "justify-end" : "justify-start"}`}
-                  >
+                  <div key={i} className={`flex ${out ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[70%]">
                       <div
                         className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm ${
-                          out
-                            ? "rounded-br-sm text-white"
-                            : "rounded-bl-sm bg-white"
+                          out ? "rounded-br-sm text-white" : "rounded-bl-sm bg-white"
                         }`}
-                        style={
-                          out
-                            ? { backgroundColor: "#86000B" }
-                            : { color: "#1B2419" }
-                        }
+                        style={out ? { backgroundColor: "#86000B" } : { color: "#1B2419" }}
                       >
-                        <span style={{ whiteSpace: "pre-wrap" }}>
-                          {m.content}
-                        </span>
+                        <span style={{ whiteSpace: "pre-wrap" }}>{m.content}</span>
                       </div>
                       <div
                         className={`text-[10px] text-gray-500 mt-0.5 ${

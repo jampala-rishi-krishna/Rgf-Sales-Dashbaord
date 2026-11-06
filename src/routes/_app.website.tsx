@@ -77,7 +77,7 @@ function WebsiteTab() {
 
   const sessions = useMemo(() => {
     const sorted = [...(data ?? [])].sort((a, b) =>
-      (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? "")
+      (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? ""),
     );
     const q = search.toLowerCase().trim();
     if (!q) return sorted;
@@ -85,12 +85,11 @@ function WebsiteTab() {
       [s.visitorName, s.visitorEmail, s.businessType, s.sessionId]
         .join(" ")
         .toLowerCase()
-        .includes(q)
+        .includes(q),
     );
   }, [data, search]);
 
-  const active =
-    sessions.find((s) => s.sessionId === activeSessionId) ?? sessions[0];
+  const active = sessions.find((s) => s.sessionId === activeSessionId) ?? sessions[0];
 
   return (
     <div
@@ -98,10 +97,7 @@ function WebsiteTab() {
       style={{ height: "calc(100vh - 7rem - 1rem)" }}
     >
       {/* ── Left panel — session list ───────────────────────────────────── */}
-      <div
-        className="border-r flex flex-col min-h-0"
-        style={{ backgroundColor: "#FFEBCE" }}
-      >
+      <div className="border-r flex flex-col min-h-0" style={{ backgroundColor: "#FFEBCE" }}>
         <div className="px-4 py-3 border-b shrink-0">
           <div className="font-black text-lg" style={{ color: "#86000B" }}>
             Website
@@ -116,18 +112,12 @@ function WebsiteTab() {
           />
         </div>
         <div className="overflow-y-auto flex-1">
-          {isLoading && (
-            <div className="p-4 text-sm text-gray-500">Loading…</div>
-          )}
+          {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
           {error && (
-            <div className="p-4 text-sm text-red-600">
-              Failed to load website chat sessions.
-            </div>
+            <div className="p-4 text-sm text-red-600">Failed to load website chat sessions.</div>
           )}
           {!isLoading && sessions.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">
-              No conversations yet.
-            </div>
+            <div className="p-4 text-sm text-gray-500">No conversations yet.</div>
           )}
           {sessions.map((s) => {
             const sel = active?.sessionId === s.sessionId;
@@ -145,16 +135,11 @@ function WebsiteTab() {
                 className="w-full text-left px-4 py-3 border-b hover:bg-white transition-colors"
                 style={{
                   backgroundColor: sel ? "#FFFFFF" : "transparent",
-                  borderLeft: sel
-                    ? "3px solid #86000B"
-                    : "3px solid transparent",
+                  borderLeft: sel ? "3px solid #86000B" : "3px solid transparent",
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <div
-                    className="font-bold text-sm truncate flex-1"
-                    style={{ color: "#1B2419" }}
-                  >
+                  <div className="font-bold text-sm truncate flex-1" style={{ color: "#1B2419" }}>
                     {primary}
                   </div>
                   <span
@@ -165,9 +150,7 @@ function WebsiteTab() {
                   </span>
                 </div>
                 {secondary && (
-                  <div className="text-[11px] text-gray-500 truncate mt-0.5">
-                    {secondary}
-                  </div>
+                  <div className="text-[11px] text-gray-500 truncate mt-0.5">{secondary}</div>
                 )}
                 <div className="flex items-center justify-between mt-1">
                   <div className="text-[10px] text-gray-400">
@@ -192,10 +175,7 @@ function WebsiteTab() {
       </div>
 
       {/* ── Right panel — chat view ─────────────────────────────────────── */}
-      <div
-        className="flex flex-col min-h-0"
-        style={{ backgroundColor: "#FFF8F0" }}
-      >
+      <div className="flex flex-col min-h-0" style={{ backgroundColor: "#FFF8F0" }}>
         {!active ? (
           <div className="h-full flex items-center justify-center text-gray-400 text-sm">
             Select a conversation to view
@@ -208,16 +188,19 @@ function WebsiteTab() {
               style={{ backgroundColor: "#86000B" }}
             >
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                {(active.visitorName || sessionLabel(active))
-                  .slice(0, 2)
-                  .toUpperCase()}
+                {(active.visitorName || sessionLabel(active)).slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-white font-bold leading-tight truncate">
                   {active.visitorName || sessionLabel(active)}
                 </div>
                 <div className="text-white/70 text-xs truncate">
-                  {[active.businessType, [active.visitorCity, active.visitorRegion, active.visitorCountry].filter(Boolean).join(", ")]
+                  {[
+                    active.businessType,
+                    [active.visitorCity, active.visitorRegion, active.visitorCountry]
+                      .filter(Boolean)
+                      .join(", "),
+                  ]
                     .filter(Boolean)
                     .join(" · ")}
                 </div>
@@ -233,33 +216,20 @@ function WebsiteTab() {
             {/* Message bubbles */}
             <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-3">
               {active.messages.length === 0 && (
-                <div className="text-center text-sm text-gray-400 mt-8">
-                  No messages yet.
-                </div>
+                <div className="text-center text-sm text-gray-400 mt-8">No messages yet.</div>
               )}
               {active.messages.map((m, i) => {
                 const out = m.sender === "agent";
                 return (
-                  <div
-                    key={i}
-                    className={`flex ${out ? "justify-end" : "justify-start"}`}
-                  >
+                  <div key={i} className={`flex ${out ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[70%]">
                       <div
                         className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm ${
-                          out
-                            ? "rounded-br-sm text-white"
-                            : "rounded-bl-sm bg-white"
+                          out ? "rounded-br-sm text-white" : "rounded-bl-sm bg-white"
                         }`}
-                        style={
-                          out
-                            ? { backgroundColor: "#86000B" }
-                            : { color: "#1B2419" }
-                        }
+                        style={out ? { backgroundColor: "#86000B" } : { color: "#1B2419" }}
                       >
-                        <span style={{ whiteSpace: "pre-wrap" }}>
-                          {m.text}
-                        </span>
+                        <span style={{ whiteSpace: "pre-wrap" }}>{m.text}</span>
                       </div>
                       {m.attachmentUrl && (
                         <a
@@ -268,12 +238,8 @@ function WebsiteTab() {
                           rel="noopener noreferrer"
                           className="mt-2 flex items-center gap-3 rounded-lg p-3 transition-opacity hover:opacity-90"
                           style={{
-                            backgroundColor: out
-                              ? "rgba(255,255,255,0.15)"
-                              : "#F7F4EF",
-                            border: out
-                              ? "1px solid rgba(255,255,255,0.3)"
-                              : "1px solid #e0d6c8",
+                            backgroundColor: out ? "rgba(255,255,255,0.15)" : "#F7F4EF",
+                            border: out ? "1px solid rgba(255,255,255,0.3)" : "1px solid #e0d6c8",
                           }}
                         >
                           <div

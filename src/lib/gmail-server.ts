@@ -70,6 +70,9 @@ export function extractHtmlBody(payload: any): string {
   return "";
 }
 
-export function getHeader(headers: { name: string; value: string }[] | undefined, name: string): string {
+export function getHeader(
+  headers: { name: string; value: string }[] | undefined,
+  name: string,
+): string {
   return (headers ?? []).find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? "";
 }

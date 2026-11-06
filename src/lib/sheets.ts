@@ -7,7 +7,10 @@ export function csvUrl(sheetId: string, tab: string) {
   return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
 }
 
-export async function fetchSheet<T = Record<string, string>>(sheetId: string, tab: string): Promise<T[]> {
+export async function fetchSheet<T = Record<string, string>>(
+  sheetId: string,
+  tab: string,
+): Promise<T[]> {
   const res = await fetch(csvUrl(sheetId, tab));
   if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`);
   const text = await res.text();

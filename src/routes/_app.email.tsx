@@ -176,7 +176,10 @@ function EmailTab() {
       className="bg-white rounded-xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-[35%_65%]"
       style={{ height: "calc(100vh - 7rem - 1rem)" }}
     >
-      <div className="border-r flex flex-col overflow-hidden" style={{ backgroundColor: "#FFEBCE" }}>
+      <div
+        className="border-r flex flex-col overflow-hidden"
+        style={{ backgroundColor: "#FFEBCE" }}
+      >
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <div className="font-black text-lg" style={{ color: "#86000B" }}>
             Gmail Inbox
@@ -235,7 +238,12 @@ function EmailTab() {
                 }}
               >
                 <div className="flex items-center gap-2">
-                  {item.isUnread && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "#86000B" }} />}
+                  {item.isUnread && (
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: "#86000B" }}
+                    />
+                  )}
                   <div className="font-bold text-sm truncate flex-1" style={{ color: "#1B2419" }}>
                     {item.subject || "(no subject)"}
                   </div>
@@ -273,7 +281,11 @@ function EmailTab() {
                 onClick={loadMore}
                 disabled={isFetching}
                 className="w-full py-2 text-xs font-semibold rounded-md transition-colors disabled:opacity-50"
-                style={{ backgroundColor: "#FFFFFF", border: "1px solid #e0d6c8", color: "#86000B" }}
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #e0d6c8",
+                  color: "#86000B",
+                }}
               >
                 {isFetching ? "Loading…" : "Load more emails"}
               </button>
@@ -296,13 +308,17 @@ function EmailTab() {
                     {selected.subject || "(no subject)"}
                   </h2>
                   <div className="text-xs text-gray-500 mt-1">
-                    {selected.messageCount} {selected.messageCount === 1 ? "message" : "messages"} in thread
+                    {selected.messageCount} {selected.messageCount === 1 ? "message" : "messages"}{" "}
+                    in thread
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() =>
-                      flagMutation.mutate({ threadId: selected.threadId, flagged: !selected.isFlagged })
+                      flagMutation.mutate({
+                        threadId: selected.threadId,
+                        flagged: !selected.isFlagged,
+                      })
                     }
                     className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
                     title={selected.isFlagged ? "Unflag" : "Flag"}
@@ -350,7 +366,12 @@ function EmailTab() {
                         }}
                       >
                         <div className="text-[11px] text-gray-500 mb-2 flex justify-between gap-3">
-                          <span className="font-semibold truncate" style={{ color: message.direction === "outbound" ? "#86000B" : "#1B2419" }}>
+                          <span
+                            className="font-semibold truncate"
+                            style={{
+                              color: message.direction === "outbound" ? "#86000B" : "#1B2419",
+                            }}
+                          >
                             {message.direction === "outbound"
                               ? "Martin Reyes (Rare Global Food)"
                               : sender.name || sender.email}

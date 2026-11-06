@@ -14,9 +14,7 @@ export const Route = createFileRoute("/api/gmail-flag")({
             });
           }
           const token = await getGmailAccessToken();
-          const body = flagged
-            ? { addLabelIds: ["STARRED"] }
-            : { removeLabelIds: ["STARRED"] };
+          const body = flagged ? { addLabelIds: ["STARRED"] } : { removeLabelIds: ["STARRED"] };
 
           const res = await fetch(
             `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/modify`,

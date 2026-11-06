@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getGmailAccessToken, gmailFetch, getHeader, GMAIL_BUSINESS_EMAIL } from "@/lib/gmail-server";
+import {
+  getGmailAccessToken,
+  gmailFetch,
+  getHeader,
+  GMAIL_BUSINESS_EMAIL,
+} from "@/lib/gmail-server";
 
 const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 const THREAD_META_CHUNK_SIZE = 15;
@@ -21,7 +26,10 @@ const EXCLUDED_SUBJECTS = [
   "Assignment Confirmed",
 ];
 const EXCLUDED_KEYWORDS = ["RARECHAIN"];
-const EXCLUDED_SUBJECT_RE = new RegExp(EXCLUDED_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "i");
+const EXCLUDED_SUBJECT_RE = new RegExp(
+  EXCLUDED_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"),
+  "i",
+);
 
 const EXCLUSION_QUERY = [
   ...EXCLUDED_SENDERS.map((s) => `-from:${s} -to:${s}`),
@@ -48,7 +56,9 @@ async function fetchThreadMetaWithRetry(threadId: string, token: string): Promis
       await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
       continue;
     }
-    console.error(`[gmail-threads] giving up on thread ${threadId}: ${res.status} ${await res.text()}`);
+    console.error(
+      `[gmail-threads] giving up on thread ${threadId}: ${res.status} ${await res.text()}`,
+    );
     return null;
   }
   return null;
@@ -65,7 +75,10 @@ export const Route = createFileRoute("/api/gmail-threads")({
         try {
           const token = await getGmailAccessToken();
 
-          const listQuery = new URLSearchParams({ maxResults, q: `-in:chats -in:draft ${EXCLUSION_QUERY}` });
+          const listQuery = new URLSearchParams({
+            maxResults,
+            q: `-in:chats -in:draft ${EXCLUSION_QUERY}`,
+          });
           if (pageToken) listQuery.set("pageToken", pageToken);
 
           const listData = await gmailFetch(`/threads?${listQuery.toString()}`, token);
@@ -100,7 +113,9 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 const to = getHeader(headers, "To");
                 const subject = getHeader(headers, "Subject") || "(no subject)";
                 const date = getHeader(headers, "Date");
-                const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL) ? "outbound" : "inbound";
+                const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL)
+                  ? "outbound"
+                  : "inbound";
                 const isUnread = messages.some((m) => (m.labelIds ?? []).includes("UNREAD"));
                 const isFlagged = messages.some((m: any) => (m.labelIds ?? []).includes("STARRED"));
 
@@ -125,7 +140,10 @@ export const Route = createFileRoute("/api/gmail-threads")({
 
           return new Response(
             JSON.stringify({ threads, nextPageToken: listData.nextPageToken ?? null }),
-            { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } },
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+            },
           );
         } catch (err) {
           console.error("[gmail-threads] error:", err);

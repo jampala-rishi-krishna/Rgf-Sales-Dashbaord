@@ -18,7 +18,7 @@ const TABS = [
 ] as const;
 
 const INACTIVITY_MS = 5 * 60 * 1000; // 5 minutes
-const WARN_BEFORE_MS = 30 * 1000;     // show warning 30 s before logout
+const WARN_BEFORE_MS = 30 * 1000; // show warning 30 s before logout
 
 function AppLayout() {
   const navigate = useNavigate();

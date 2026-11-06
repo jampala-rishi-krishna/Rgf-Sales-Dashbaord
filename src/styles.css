@@ -38,30 +38,30 @@
 :root {
   --radius: 0.5rem;
   /* Brand */
-  --rare-red: #86000B;
-  --beige: #FFEBCE;
-  --hunter: #33673B;
-  --near-black: #1B2419;
+  --rare-red: #86000b;
+  --beige: #ffebce;
+  --hunter: #33673b;
+  --near-black: #1b2419;
 
-  --background: #FFFFFF;
-  --foreground: #1B2419;
-  --card: #FFFFFF;
-  --card-foreground: #1B2419;
-  --popover: #FFFFFF;
-  --popover-foreground: #1B2419;
-  --primary: #86000B;
-  --primary-foreground: #FFFFFF;
-  --secondary: #FFEBCE;
-  --secondary-foreground: #1B2419;
-  --muted: #F5F1EA;
-  --muted-foreground: #6B6B66;
-  --accent: #FFEBCE;
-  --accent-foreground: #86000B;
-  --destructive: #86000B;
-  --destructive-foreground: #FFFFFF;
-  --border: #E8E2D5;
-  --input: #E8E2D5;
-  --ring: #86000B;
+  --background: #ffffff;
+  --foreground: #1b2419;
+  --card: #ffffff;
+  --card-foreground: #1b2419;
+  --popover: #ffffff;
+  --popover-foreground: #1b2419;
+  --primary: #86000b;
+  --primary-foreground: #ffffff;
+  --secondary: #ffebce;
+  --secondary-foreground: #1b2419;
+  --muted: #f5f1ea;
+  --muted-foreground: #6b6b66;
+  --accent: #ffebce;
+  --accent-foreground: #86000b;
+  --destructive: #86000b;
+  --destructive-foreground: #ffffff;
+  --border: #e8e2d5;
+  --input: #e8e2d5;
+  --ring: #86000b;
 }
 
 @layer base {
@@ -86,7 +86,8 @@
   width: 100% !important;
   table-layout: auto !important;
 }
-.email-body-content div, .email-body-content p {
+.email-body-content div,
+.email-body-content p {
   max-width: 100% !important;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -99,8 +100,9 @@
 
 /* Avoid automatic iOS Safari zoom when tapping inputs */
 @media (max-width: 768px) {
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     font-size: 16px !important;
   }
 }
-
