@@ -69,4 +69,6 @@ Add these in Vercel → Project → **Settings → Environment Variables**, for 
 
 Environment changes don't apply to existing deployments. Go to **Redeploy**, untick **Use existing build cache**, and make sure it builds the latest commit.
 
+If sign-in returns **503** ("Sign-in is temporarily unavailable"), check the deployment's server logs for `[auth] configuration error`. Set `DASHBOARD_USERS` to valid account JSON with complete bcrypt hashes and `SESSION_SECRET` to at least 16 characters in the environment serving the URL (Production or Preview), then redeploy. A **401** ("Invalid email or password") means usable accounts are configured, but the submitted credentials do not match them. Local `.env.local` credentials do not configure Vercel's deployed environment.
+
 Leave `ACTIONS_DRY_RUN=true` until the click-through is done. When switching it to `false`, test one single-lead send to your own number before any bulk run.

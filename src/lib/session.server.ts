@@ -16,11 +16,13 @@ export const SESSION_COOKIE = "rgf_session";
 const TTL_SECONDS = 12 * 60 * 60;
 const ROLES: Role[] = ["viewer", "agent", "admin"];
 
+export class AuthConfigurationError extends Error {}
+
 function secret(): string {
   const s = process.env.SESSION_SECRET;
   if (!s || s.length < 16) {
     if (process.env.NODE_ENV === "production")
-      throw new Error("SESSION_SECRET must be set (>=16 chars)");
+      throw new AuthConfigurationError("SESSION_SECRET must be set (>=16 chars)");
     return "dev-only-insecure-session-secret";
   }
   return s;
@@ -135,7 +137,11 @@ export function parseDashboardUsers(value: string | undefined): {
 function loadUsers(): StoredUser[] {
   const { users, problems } = parseDashboardUsers(process.env.DASHBOARD_USERS);
   for (const p of problems) console.error(`[session] ${p}`);
-  return users;
+  const usable = users.filter((user) => BCRYPT_RE.test(user.passwordHash));
+  if (!usable.length) {
+    throw new AuthConfigurationError("DASHBOARD_USERS has no usable accounts");
+  }
+  return usable;
 }
 
 // Compared against when the email is unknown, so timing does not reveal valid emails.
@@ -145,6 +151,8 @@ export async function verifyCredentials(
   email: string,
   password: string,
 ): Promise<SessionUser | null> {
+  // Validate signing configuration before accepting credentials.
+  secret();
   const e = email.trim().toLowerCase();
   const users = loadUsers();
   const u = users.find((x) => x.email.trim().toLowerCase() === e);

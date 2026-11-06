@@ -136,19 +136,20 @@
 /* ── Channel tokens (§4.2, verbatim) ──────────────────────────────────────── */
 [data-channel="whatsapp"] {
   --ch: #25d366;
-  --ch-primary: #00a884;
-  --ch-header: #008069;
+  --ch-primary: #008069;
+  --ch-header: #f0f2f5;
   --ch-app-bg: #f0f2f5;
   --ch-panel: #ffffff;
   --ch-chat-bg: #efeae2;
   --ch-out: #d9fdd3;
   --ch-in: #ffffff;
   --ch-text: #111b21;
-  --ch-text-2: #667781;
+  --ch-text-2: #54656f;
   --ch-divider: #e9edef;
   --ch-tick-read: #53bdeb;
 }
 .dark [data-channel="whatsapp"] {
+  --ch-primary: #00a884;
   --ch-app-bg: #111b21;
   --ch-panel: #111b21;
   --ch-header: #202c33;
@@ -156,7 +157,7 @@
   --ch-out: #005c4b;
   --ch-in: #202c33;
   --ch-text: #e9edef;
-  --ch-text-2: #8696a0;
+  --ch-text-2: #c2cbd0;
   --ch-divider: #2a3942;
 }
 [data-channel="viber"] {
