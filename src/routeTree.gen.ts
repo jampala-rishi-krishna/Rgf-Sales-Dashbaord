@@ -14,9 +14,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
+import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
 import { Route as AppWebsiteRouteImport } from './routes/_app.website'
 import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
+import { Route as ApiActivityRouteImport } from './routes/api/activity'
 import { Route as ApiAgentHealthRouteImport } from './routes/api/agent-health'
 import { Route as ApiCampaignRunsRouteImport } from './routes/api/campaign-runs'
 import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
@@ -60,6 +62,11 @@ const AppEmailRoute = AppEmailRouteImport.update({
   path: '/email',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSmsRoute = AppSmsRouteImport.update({
   id: '/sms',
   path: '/sms',
@@ -74,6 +81,11 @@ const AppWhatsappRoute = AppWhatsappRouteImport.update({
   id: '/whatsapp',
   path: '/whatsapp',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiActivityRoute = ApiActivityRouteImport.update({
+  id: '/api/activity',
+  path: '/api/activity',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAgentHealthRoute = ApiAgentHealthRouteImport.update({
   id: '/api/agent-health',
@@ -172,9 +184,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
   '/email': typeof AppEmailRoute
+  '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
+  '/api/activity': typeof ApiActivityRoute
   '/api/agent-health': typeof ApiAgentHealthRoute
   '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
@@ -198,9 +212,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
   '/email': typeof AppEmailRoute
+  '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
+  '/api/activity': typeof ApiActivityRoute
   '/api/agent-health': typeof ApiAgentHealthRoute
   '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
@@ -227,9 +243,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/calls': typeof AppCallsRoute
   '/_app/email': typeof AppEmailRoute
+  '/_app/inbox': typeof AppInboxRoute
   '/_app/sms': typeof AppSmsRoute
   '/_app/website': typeof AppWebsiteRoute
   '/_app/whatsapp': typeof AppWhatsappRoute
+  '/api/activity': typeof ApiActivityRoute
   '/api/agent-health': typeof ApiAgentHealthRoute
   '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
@@ -257,9 +275,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/calls'
     | '/email'
+    | '/inbox'
     | '/sms'
     | '/website'
     | '/whatsapp'
+    | '/api/activity'
     | '/api/agent-health'
     | '/api/campaign-runs'
     | '/api/gmail-flag'
@@ -283,9 +303,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/calls'
     | '/email'
+    | '/inbox'
     | '/sms'
     | '/website'
     | '/whatsapp'
+    | '/api/activity'
     | '/api/agent-health'
     | '/api/campaign-runs'
     | '/api/gmail-flag'
@@ -311,9 +333,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/_app/calls'
     | '/_app/email'
+    | '/_app/inbox'
     | '/_app/sms'
     | '/_app/website'
     | '/_app/whatsapp'
+    | '/api/activity'
     | '/api/agent-health'
     | '/api/campaign-runs'
     | '/api/gmail-flag'
@@ -338,6 +362,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiActivityRoute: typeof ApiActivityRoute
   ApiAgentHealthRoute: typeof ApiAgentHealthRoute
   ApiCampaignRunsRoute: typeof ApiCampaignRunsRoute
   ApiGmailFlagRoute: typeof ApiGmailFlagRoute
@@ -395,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmailRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inbox': {
+      id: '/_app/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AppInboxRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/sms': {
       id: '/_app/sms'
       path: '/sms'
@@ -415,6 +447,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/whatsapp'
       preLoaderRoute: typeof AppWhatsappRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/api/activity': {
+      id: '/api/activity'
+      path: '/api/activity'
+      fullPath: '/api/activity'
+      preLoaderRoute: typeof ApiActivityRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/agent-health': {
       id: '/api/agent-health'
@@ -548,6 +587,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCallsRoute: typeof AppCallsRoute
   AppEmailRoute: typeof AppEmailRoute
+  AppInboxRoute: typeof AppInboxRoute
   AppSmsRoute: typeof AppSmsRoute
   AppWebsiteRoute: typeof AppWebsiteRoute
   AppWhatsappRoute: typeof AppWhatsappRoute
@@ -557,6 +597,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppCallsRoute: AppCallsRoute,
   AppEmailRoute: AppEmailRoute,
+  AppInboxRoute: AppInboxRoute,
   AppSmsRoute: AppSmsRoute,
   AppWebsiteRoute: AppWebsiteRoute,
   AppWhatsappRoute: AppWhatsappRoute,
@@ -568,6 +609,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiActivityRoute: ApiActivityRoute,
   ApiAgentHealthRoute: ApiAgentHealthRoute,
   ApiCampaignRunsRoute: ApiCampaignRunsRoute,
   ApiGmailFlagRoute: ApiGmailFlagRoute,
