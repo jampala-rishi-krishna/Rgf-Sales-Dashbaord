@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Search,
   Star,
+  Trash2,
   X,
 } from "lucide-react";
 import { EmptyState } from "@/components/shared";
@@ -107,6 +108,8 @@ function Row({
   onOpen,
   onCheck,
   onStar,
+  onDelete,
+  deleteDisabled,
 }: {
   t: GmailThreadSummary;
   selected: boolean;
@@ -114,6 +117,8 @@ function Row({
   onOpen: () => void;
   onCheck: () => void;
   onStar: () => void;
+  onDelete: () => void;
+  deleteDisabled: boolean;
 }) {
   const who = t.direction === "outbound" ? `me, ${displayName(t.to)}` : displayName(t.from);
   return (
@@ -132,7 +137,7 @@ function Row({
       )}
     >
       <label
-        className="h-10 w-8 hidden md:grid place-items-center"
+        className="h-10 w-8 grid place-items-center shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
         <input
@@ -158,6 +163,20 @@ function Row({
           style={{ color: t.isFlagged ? "var(--ch-star)" : "var(--ch-text-2)" }}
           fill={t.isFlagged ? "var(--ch-star)" : "none"}
         />
+      </button>
+      <button
+        type="button"
+        aria-label={`Delete ${t.subject}`}
+        title="Move conversation to Trash"
+        disabled={deleteDisabled}
+        onClick={(event) => {
+          event.stopPropagation();
+          onDelete();
+        }}
+        onKeyDown={(event) => event.stopPropagation()}
+        className="h-8 w-8 grid place-items-center rounded-full hover:bg-black/5 text-[var(--ch-text-2)] disabled:opacity-30 shrink-0"
+      >
+        <Trash2 className="h-4 w-4" />
       </button>
       <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center md:gap-3">
         <span
@@ -237,6 +256,8 @@ export function ThreadList({
   onToggleAll,
   onOpen,
   onStar,
+  onDelete,
+  deleteDisabled,
 }: {
   threads: GmailThreadSummary[];
   rangeStart: number;
@@ -255,13 +276,15 @@ export function ThreadList({
   onToggleAll: () => void;
   onOpen: (t: GmailThreadSummary) => void;
   onStar: (t: GmailThreadSummary) => void;
+  onDelete: (ids: string[]) => void;
+  deleteDisabled: boolean;
 }) {
   const allChecked = threads.length > 0 && threads.every((t) => checked.has(t.threadId));
   const rangeEnd = rangeStart + threads.length;
   return (
     <div className="flex flex-col min-h-0 flex-1">
       <div className="flex items-center h-12 px-2 md:px-4 gap-1 border-b border-gray-100 dark:border-white/5 shrink-0">
-        <label className="h-10 w-8 hidden md:grid place-items-center">
+        <label className="h-10 w-8 grid place-items-center">
           <input
             type="checkbox"
             checked={allChecked}
@@ -270,6 +293,17 @@ export function ThreadList({
             className="h-4 w-4 accent-[#0B57D0]"
           />
         </label>
+        {checked.size > 0 && (
+          <button
+            type="button"
+            onClick={() => onDelete([...checked])}
+            disabled={deleteDisabled}
+            title="Move selected conversations to Trash"
+            className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm hover:bg-black/5 disabled:opacity-40"
+          >
+            <Trash2 className="h-4 w-4" /> Delete ({checked.size})
+          </button>
+        )}
         <button
           type="button"
           onClick={onRefresh}
@@ -341,6 +375,8 @@ export function ThreadList({
             onOpen={() => onOpen(t)}
             onCheck={() => onToggleCheck(t.threadId)}
             onStar={() => onStar(t)}
+            onDelete={() => onDelete([t.threadId])}
+            deleteDisabled={deleteDisabled}
           />
         ))}
       </ul>

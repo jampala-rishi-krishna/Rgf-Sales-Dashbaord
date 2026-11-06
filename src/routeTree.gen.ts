@@ -28,6 +28,7 @@ import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
 import { Route as ApiGmailSendRouteImport } from './routes/api/gmail-send'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
+import { Route as ApiGmailTrashRouteImport } from './routes/api/gmail-trash'
 import { Route as ApiSmsConversationsRouteImport } from './routes/api/sms-conversations'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
@@ -139,6 +140,11 @@ const ApiGmailThreadsRoute = ApiGmailThreadsRouteImport.update({
   path: '/api/gmail-threads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGmailTrashRoute = ApiGmailTrashRouteImport.update({
+  id: '/api/gmail-trash',
+  path: '/api/gmail-trash',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSmsConversationsRoute = ApiSmsConversationsRouteImport.update({
   id: '/api/sms-conversations',
   path: '/api/sms-conversations',
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/gmail-trash': typeof ApiGmailTrashRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/gmail-trash': typeof ApiGmailTrashRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/gmail-trash': typeof ApiGmailTrashRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/gmail-trash'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/gmail-trash'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/gmail-trash'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
@@ -453,6 +465,7 @@ export interface RootRouteChildren {
   ApiGmailSendRoute: typeof ApiGmailSendRoute
   ApiGmailThreadRoute: typeof ApiGmailThreadRoute
   ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
+  ApiGmailTrashRoute: typeof ApiGmailTrashRoute
   ApiSmsConversationsRoute: typeof ApiSmsConversationsRoute
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
@@ -604,6 +617,13 @@ declare module '@tanstack/react-router' {
       path: '/api/gmail-threads'
       fullPath: '/api/gmail-threads'
       preLoaderRoute: typeof ApiGmailThreadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gmail-trash': {
+      id: '/api/gmail-trash'
+      path: '/api/gmail-trash'
+      fullPath: '/api/gmail-trash'
+      preLoaderRoute: typeof ApiGmailTrashRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sms-conversations': {
@@ -759,6 +779,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGmailSendRoute: ApiGmailSendRoute,
   ApiGmailThreadRoute: ApiGmailThreadRoute,
   ApiGmailThreadsRoute: ApiGmailThreadsRoute,
+  ApiGmailTrashRoute: ApiGmailTrashRoute,
   ApiSmsConversationsRoute: ApiSmsConversationsRoute,
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,

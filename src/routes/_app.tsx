@@ -134,7 +134,11 @@ function AppLayout() {
       paletteOpen={paletteOpen}
       setPaletteOpen={setPaletteOpen}
       user={user}
-      dryRun={me.data?.dryRun ?? true}
+      dryRun={
+        pathname.replace(/\/$/, "") === "/email"
+          ? !me.data?.flags.emailSend
+          : (me.data?.dryRun ?? true)
+      }
       onLogout={() => void doLogout()}
       showWarning={showWarning}
       onStay={resetTimer}

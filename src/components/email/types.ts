@@ -17,6 +17,9 @@ export interface GmailMessage {
   id: string;
   from: string;
   to: string;
+  cc?: string;
+  replyTo?: string;
+  messageId?: string;
   subject: string;
   date: string;
   direction: "inbound" | "outbound";

@@ -26,22 +26,55 @@ describe("Gmail connection", () => {
     ["unauthorized_client", "gmail_invalid_client"],
     ["invalid_grant", "gmail_reconnect_required"],
   ])("explains %s without exposing Google's raw response", async (error, code) => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(
-      JSON.stringify({ error, error_description: "private upstream details" }), { status: 400 },
-    )));
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ error, error_description: "private upstream details" }), {
+            status: 400,
+          }),
+        ),
+    );
     const { getGmailAccessToken } = await import("./gmail-server");
     await expect(getGmailAccessToken()).rejects.toMatchObject({ code });
     await expect(getGmailAccessToken()).rejects.not.toThrow("private upstream details");
   });
 
   it("refreshes and caches a valid access token", async () => {
-    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      access_token: "test-access", expires_in: 3600,
-    })));
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          access_token: "test-access",
+          expires_in: 3600,
+        }),
+      ),
+    );
     vi.stubGlobal("fetch", fetch);
     const { getGmailAccessToken } = await import("./gmail-server");
     await expect(getGmailAccessToken()).resolves.toBe("test-access");
     await expect(getGmailAccessToken()).resolves.toBe("test-access");
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses reversible Trash endpoints and reports each failed conversation", async () => {
+    const fetch = vi.fn(async (url: string | URL | Request) => {
+      if (String(url).includes("oauth2"))
+        return new Response(JSON.stringify({ access_token: "test-access", expires_in: 3600 }));
+      return new Response("{}", { status: String(url).includes("/bad/") ? 403 : 200 });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const { moveGmailThreads } = await import("./gmail-server");
+    await expect(moveGmailThreads(["abc", "bad"])).resolves.toEqual({
+      moved: ["abc"],
+      failed: ["bad"],
+    });
+    await expect(moveGmailThreads(["abc"], true)).resolves.toEqual({ moved: ["abc"], failed: [] });
+    expect(fetch.mock.calls.map((call) => String(call[0]))).toContain(
+      "https://gmail.googleapis.com/gmail/v1/users/me/threads/abc/trash",
+    );
+    expect(fetch.mock.calls.map((call) => String(call[0]))).toContain(
+      "https://gmail.googleapis.com/gmail/v1/users/me/threads/abc/untrash",
+    );
   });
 });

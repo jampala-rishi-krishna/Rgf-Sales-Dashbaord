@@ -8,6 +8,7 @@ export function getFlags() {
     campaignRuns: on(process.env.FEATURE_CAMPAIGN_RUNS),
     agentEvents: on(process.env.FEATURE_AGENT_EVENTS),
     crm: on(process.env.FEATURE_CRM),
+    emailSend: process.env.GMAIL_SEND_ENABLED === "true" || !isDryRun(),
   };
 }
 

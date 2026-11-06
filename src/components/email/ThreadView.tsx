@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Bot, Forward, RefreshCw, Reply, ReplyAll, Star, X } from "lucide-react";
+import { ArrowLeft, Bot, Forward, RefreshCw, Reply, ReplyAll, Star, Trash2, X } from "lucide-react";
 import { EmptyState } from "@/components/shared";
 import { cn } from "@/lib/utils";
 import { RichEditor, type RichEditorHandle } from "./RichEditor";
@@ -190,7 +190,7 @@ function InlineComposer({
   const last = messages[messages.length - 1];
   const lastInbound = [...messages].reverse().find((m) => m.direction === "inbound");
   const replyTarget = lastInbound
-    ? parseSender(lastInbound.from).email
+    ? parseSender(lastInbound.replyTo || lastInbound.from).email
     : (splitAddrs(last?.to ?? "")[0] ?? "");
 
   const defaultTo = mode === "forward" ? "" : replyTarget;
@@ -198,7 +198,10 @@ function InlineComposer({
     mode === "replyAll"
       ? Array.from(
           new Set(
-            [...splitAddrs(last?.to ?? "")]
+            [
+              ...splitAddrs((lastInbound ?? last)?.to ?? ""),
+              ...splitAddrs((lastInbound ?? last)?.cc ?? ""),
+            ]
               .map((a) => parseSender(a).email)
               .filter(
                 (e) =>
@@ -285,6 +288,7 @@ function InlineComposer({
             html:
               (editor.current?.getHtml() || "") + (mode === "forward" ? forwardedHeader : quoted),
             threadId: mode === "forward" ? undefined : thread.threadId,
+            inReplyTo: mode === "forward" ? undefined : (lastInbound ?? last)?.messageId,
           })}
           onSent={onSent}
         />
@@ -297,10 +301,16 @@ export function ThreadView({
   thread,
   onBack,
   onToggleStar,
+  onDelete,
+  deleteDisabled,
+  onSent,
 }: {
   thread: GmailThreadSummary;
   onBack: () => void;
   onToggleStar: (t: GmailThreadSummary) => void;
+  onDelete: () => void;
+  deleteDisabled: boolean;
+  onSent: () => void;
 }) {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["gmail-thread", thread.threadId],
@@ -343,6 +353,16 @@ export function ThreadView({
           className="h-9 w-9 grid place-items-center rounded-full hover:bg-black/5 text-[var(--ch-text-2)]"
         >
           <ArrowLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleteDisabled}
+          aria-label="Delete conversation"
+          title="Move conversation to Trash"
+          className="h-9 w-9 grid place-items-center rounded-full hover:bg-black/5 text-[var(--ch-text-2)] disabled:opacity-40"
+        >
+          <Trash2 className="h-4 w-4" />
         </button>
         <button
           type="button"
@@ -425,6 +445,7 @@ export function ThreadView({
                 onSent={() => {
                   setComposer(null);
                   refetch();
+                  onSent();
                 }}
               />
             ) : (

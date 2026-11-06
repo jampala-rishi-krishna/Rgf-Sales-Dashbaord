@@ -4,7 +4,10 @@
 export const GMAIL_BUSINESS_EMAIL = "martin@rareglobalfood.com";
 
 export class GmailConnectionError extends Error {
-  constructor(message: string, readonly code: string) {
+  constructor(
+    message: string,
+    readonly code: string,
+  ) {
     super(message);
   }
 }
@@ -83,6 +86,35 @@ export async function gmailFetch<T>(path: string, token: string): Promise<T> {
     throw new Error(`Gmail API ${path} failed: ${res.status} ${await res.text()}`);
   }
   return (await res.json()) as T;
+}
+
+/** Move whole conversations to Trash, or restore them. Never permanently deletes mail. */
+export async function moveGmailThreads(threadIds: string[], restore = false) {
+  const token = await getGmailAccessToken();
+  const moved: string[] = [];
+  const failed: string[] = [];
+  for (let i = 0; i < threadIds.length; i += 5) {
+    const batch = threadIds.slice(i, i + 5);
+    const results = await Promise.allSettled(
+      batch.map(async (id) => {
+        const response = await fetch(
+          `https://gmail.googleapis.com/gmail/v1/users/me/threads/${encodeURIComponent(id)}/${restore ? "untrash" : "trash"}`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(15_000),
+          },
+        );
+        if (!response.ok) throw new Error(`Gmail trash action failed (${response.status})`);
+        return id;
+      }),
+    );
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") moved.push(result.value);
+      else failed.push(batch[index]);
+    });
+  }
+  return { moved, failed };
 }
 
 export function decodeBase64Url(input: string): string {

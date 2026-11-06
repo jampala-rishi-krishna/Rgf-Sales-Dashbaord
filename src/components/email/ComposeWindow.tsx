@@ -5,7 +5,7 @@ import { RichEditor, type RichEditorHandle } from "./RichEditor";
 import { SendButton } from "./SendButton";
 
 /** Floating Gmail "New message" window, bottom-right. */
-export function ComposeWindow({ onClose }: { onClose: () => void }) {
+export function ComposeWindow({ onClose, onSent }: { onClose: () => void; onSent: () => void }) {
   const [state, setState] = useState<"normal" | "min" | "max">("normal");
   const [to, setTo] = useState("");
   const [cc, setCc] = useState("");
@@ -34,7 +34,7 @@ export function ComposeWindow({ onClose }: { onClose: () => void }) {
           label: state === "max" ? "Exit full screen" : "Full screen",
           run: () => setState((s) => (s === "max" ? "normal" : "max")),
         },
-        { icon: X, label: "Save & close", run: onClose },
+        { icon: X, label: "Close compose", run: onClose },
       ].map(({ icon: Icon, label, run }) => (
         <button
           key={label}
@@ -129,7 +129,10 @@ export function ComposeWindow({ onClose }: { onClose: () => void }) {
                 subject: subject.trim(),
                 html: editor.current?.getHtml() || "<p></p>",
               })}
-              onSent={onClose}
+              onSent={() => {
+                onSent();
+                onClose();
+              }}
             />
             <div className="flex-1" />
             <button

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { canAct, useMe } from "@/hooks/use-me";
 import { ComposeWindow } from "@/components/email/ComposeWindow";
 import { ComposePill, MailRail, MailTabs } from "@/components/email/MailRail";
 import { FilterChips, GmailSearch, ThreadList } from "@/components/email/ThreadList";
@@ -27,7 +28,10 @@ interface GmailThreadsResponse {
 }
 
 class GmailListError extends Error {
-  constructor(message: string, readonly retryable: boolean) {
+  constructor(
+    message: string,
+    readonly retryable: boolean,
+  ) {
     super(message);
   }
 }
@@ -50,7 +54,10 @@ function useGmailThreads(pageToken: string | null) {
           throw new GmailListError(failure.error, false);
         }
         if (response.status === 401) {
-          throw new GmailListError("Your session has expired. Sign in again to load your email.", false);
+          throw new GmailListError(
+            "Your session has expired. Sign in again to load your email.",
+            false,
+          );
         }
         throw new GmailListError("Couldn't reach Gmail. Please refresh to try again.", true);
       }
@@ -64,12 +71,17 @@ function useGmailThreads(pageToken: string | null) {
     refetchInterval: (query) =>
       query.state.error instanceof GmailListError && !query.state.error.retryable
         ? false
-        : pageToken === null ? 60000 : false,
+        : pageToken === null
+          ? 60000
+          : false,
   });
 }
 
 function EmailTab() {
   const queryClient = useQueryClient();
+  const { data: me } = useMe();
+  const canManage = canAct(me?.user?.role, "agent");
+  const hiddenIds = useRef(new Set<string>());
   const [pageToken, setPageToken] = useState<string | null>(null);
   const [allThreads, setAllThreads] = useState<GmailThreadSummary[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
@@ -77,7 +89,11 @@ function EmailTab() {
 
   useEffect(() => {
     if (!data) return;
-    setAllThreads((prev) => dedupeByThreadId([...prev, ...data.threads]));
+    setAllThreads((prev) =>
+      dedupeByThreadId([...prev, ...data.threads]).filter(
+        (t) => !hiddenIds.current.has(t.threadId),
+      ),
+    );
     setNextPageToken(data.nextPageToken);
   }, [data]);
 
@@ -89,6 +105,67 @@ function EmailTab() {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [composeOpen, setComposeOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const refreshMailbox = () => {
+    setPageToken(null);
+    setPage(0);
+    void queryClient.invalidateQueries({ queryKey: ["gmail-threads"] });
+  };
+
+  const trashMutation = useMutation({
+    mutationFn: async ({
+      threadIds,
+      restore = false,
+    }: {
+      threadIds: string[];
+      restore?: boolean;
+      snapshot?: GmailThreadSummary[];
+    }) => {
+      const response = await fetch("/api/gmail-trash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadIds, restore }),
+      });
+      const result = await response.json();
+      if (!result.data?.moved?.length)
+        throw new Error(result.error ?? "Couldn't update Gmail Trash.");
+      return result.data as { moved: string[]; failed: string[] };
+    },
+    onSuccess: ({ moved, failed }, { restore, snapshot }) => {
+      const ids = new Set(moved);
+      if (restore) {
+        moved.forEach((id) => hiddenIds.current.delete(id));
+        setAllThreads((prev) =>
+          dedupeByThreadId([...prev, ...(snapshot ?? []).filter((t) => ids.has(t.threadId))]),
+        );
+        toast.success("Conversations restored");
+      } else {
+        const removed = allThreads.filter((t) => ids.has(t.threadId));
+        moved.forEach((id) => hiddenIds.current.add(id));
+        setAllThreads((prev) => prev.filter((t) => !ids.has(t.threadId)));
+        setChecked((prev) => new Set([...prev].filter((id) => !ids.has(id))));
+        if (selectedId && ids.has(selectedId)) setSelectedId(null);
+        queryClient.setQueriesData<GmailThreadsResponse>({ queryKey: ["gmail-threads"] }, (old) =>
+          old ? { ...old, threads: old.threads.filter((t) => !ids.has(t.threadId)) } : old,
+        );
+        toast.success(
+          `${moved.length} conversation${moved.length === 1 ? "" : "s"} moved to Trash`,
+          {
+            duration: 10000,
+            action: {
+              label: "Undo",
+              onClick: () =>
+                trashMutation.mutate({ threadIds: moved, restore: true, snapshot: removed }),
+            },
+          },
+        );
+      }
+      if (failed.length)
+        toast.error(`${failed.length} conversation(s) could not be updated. Please retry.`);
+      refreshMailbox();
+    },
+    onError: (error) => toast.error(error.message),
+  });
 
   const flagMutation = useMutation({
     mutationFn: async ({ threadId, flagged }: { threadId: string; flagged: boolean }) => {
@@ -180,8 +257,8 @@ function EmailTab() {
     ? error instanceof GmailListError
       ? error.message
       : allThreads.length
-      ? "Failed to load more emails — try again."
-      : "Couldn't reach Gmail. Check the connection and refresh."
+        ? "Failed to load more emails — try again."
+        : "Couldn't reach Gmail. Check the connection and refresh."
     : null;
 
   return (
@@ -226,6 +303,9 @@ function EmailTab() {
               thread={selected}
               onBack={() => setSelectedId(null)}
               onToggleStar={toggleStar}
+              onDelete={() => trashMutation.mutate({ threadIds: [selected.threadId] })}
+              deleteDisabled={!canManage || trashMutation.isPending}
+              onSent={refreshMailbox}
             />
           ) : (
             <>
@@ -277,6 +357,8 @@ function EmailTab() {
                 }
                 onOpen={(t) => setSelectedId(t.threadId)}
                 onStar={toggleStar}
+                onDelete={(threadIds) => trashMutation.mutate({ threadIds })}
+                deleteDisabled={!canManage || trashMutation.isPending}
               />
             </>
           )}
@@ -288,7 +370,15 @@ function EmailTab() {
           <ComposePill compact onClick={() => setComposeOpen(true)} />
         </div>
       )}
-      {composeOpen && <ComposeWindow onClose={() => setComposeOpen(false)} />}
+      {composeOpen && (
+        <ComposeWindow
+          onClose={() => setComposeOpen(false)}
+          onSent={() => {
+            setMailbox("sent");
+            refreshMailbox();
+          }}
+        />
+      )}
     </div>
   );
 }

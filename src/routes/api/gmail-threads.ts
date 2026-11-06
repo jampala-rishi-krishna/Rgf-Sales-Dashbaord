@@ -96,7 +96,7 @@ export const Route = createFileRoute("/api/gmail-threads")({
 
           const listQuery = new URLSearchParams({
             maxResults,
-            q: `-in:chats -in:draft ${EXCLUSION_QUERY}`,
+            q: `-in:chats -in:draft -in:trash ${EXCLUSION_QUERY}`,
           });
           if (pageToken) listQuery.set("pageToken", pageToken);
 

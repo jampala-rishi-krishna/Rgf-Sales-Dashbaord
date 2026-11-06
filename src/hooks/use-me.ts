@@ -7,6 +7,7 @@ export interface MeUser {
   role: Role;
 }
 export interface MeFlags {
+  emailSend: boolean;
   manualReply: boolean;
   singleCall: boolean;
   campaignRuns: boolean;
@@ -20,6 +21,7 @@ export interface MeResponse {
 }
 
 export const DEFAULT_FLAGS: MeFlags = {
+  emailSend: false,
   manualReply: false,
   singleCall: false,
   campaignRuns: false,
