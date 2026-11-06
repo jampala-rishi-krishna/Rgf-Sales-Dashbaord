@@ -130,13 +130,15 @@ export function RunCard({ run }: { run: CampaignRun }) {
             ? " (no email feed — completes after 30 min)"
             : ""}
         </span>
-        {!run.dryRun && run.sent > 0 && (
+        {!run.dryRun && (run.replied !== undefined ? run.replied > 0 : run.sent > 0) && (
           <Link
             to={meta.route as string}
             className="font-medium underline-offset-2 hover:underline"
             style={{ color: meta.color }}
           >
-            View {run.sent} {run.sent === 1 ? "reply" : "replies"} from this run
+            {run.replied !== undefined
+              ? `View ${run.replied} ${run.replied === 1 ? "reply" : "replies"} from this run`
+              : `View ${run.sent} sent`}
           </Link>
         )}
       </div>

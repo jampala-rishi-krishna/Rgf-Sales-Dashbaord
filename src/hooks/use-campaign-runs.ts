@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getJson, usePolling } from "@/hooks/use-polling";
 import { useSmsFeed, useVapiFeed, useViberFeed, useWhatsAppFeed } from "@/hooks/use-feeds";
 import { useMe } from "@/hooks/use-me";
-import type { Conversation } from "@/lib/channels";
+import { hasReplied, type Conversation } from "@/lib/channels";
 
 export type CampaignChannel = "whatsapp" | "sms" | "viber" | "email" | "voice_batch";
 export type RunStatus = "queued" | "running" | "done" | "failed";
@@ -20,6 +20,11 @@ export interface CampaignRun {
   finishedAt?: string | null;
   triggeredBy?: string;
   dryRun?: boolean;
+  /**
+   * Conversations started by this run where the lead genuinely replied (hasReplied).
+   * Undefined for channels whose feed has no reply data (email, voice batch).
+   */
+  replied?: number;
   /** true when counters are estimated from feeds (no server run tracking). */
   estimated?: boolean;
 }
@@ -45,15 +50,21 @@ function writeLocal(runs: CampaignRun[]) {
   }
 }
 
+function startedSince(c: Conversation, since: number) {
+  const first = c.messages?.[0]?.ts ?? c.lastUpdated;
+  const t = first ? Date.parse(first) : NaN;
+  return !Number.isNaN(t) && t >= since;
+}
+
 function countSince(convs: Conversation[] | undefined, since: number) {
   if (!convs) return 0;
-  let n = 0;
-  for (const c of convs) {
-    const first = c.messages?.[0]?.ts ?? c.lastUpdated;
-    const t = first ? Date.parse(first) : NaN;
-    if (!Number.isNaN(t) && t >= since) n++;
-  }
-  return n;
+  return convs.filter((c) => startedSince(c, since)).length;
+}
+
+/** Real two-way replies among conversations this run started (same rule as the channel tabs). */
+export function countRepliedSince(convs: Conversation[] | undefined, since: number) {
+  if (!convs) return 0;
+  return convs.filter((c) => startedSince(c, since) && hasReplied(c)).length;
 }
 
 function countVapiSince(calls: Record<string, unknown>[] | undefined, since: number) {
@@ -174,6 +185,16 @@ export function useCampaignRuns() {
   } else {
     runs = localComputed;
   }
+  const feedFor: Partial<Record<CampaignChannel, Conversation[] | undefined>> = {
+    whatsapp: wa.data?.items,
+    sms: sms.data?.items,
+    viber: viber.data?.items,
+  };
+  runs = runs.map((r) =>
+    r.dryRun || !(r.channel in feedFor)
+      ? r
+      : { ...r, replied: countRepliedSince(feedFor[r.channel], Date.parse(r.startedAt)) },
+  );
   runs.sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt));
 
   return { runs, addRun, clearFinished, serverMode, isLoading: serverMode && server.isLoading };
