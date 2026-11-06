@@ -6,7 +6,11 @@ import { callN8n, readJson, requireRole, toResponse } from "@/lib/n8n-actions.se
 
 const Body = z
   .object({
-    channel: z.enum(["whatsapp", "sms", "viber", "web"]),
+    // n8n's /dashboard-manual-reply contract uses "website"; "web" is the dashboard's
+    // internal ChannelKey, so accept both and always forward "website".
+    channel: z
+      .enum(["whatsapp", "sms", "viber", "website", "web"])
+      .transform((c) => (c === "web" ? "website" : c)),
     phone: z.string().min(5).max(32).optional(),
     sessionId: z.string().min(1).max(128).optional(),
     text: z.string().trim().min(1).max(4000),

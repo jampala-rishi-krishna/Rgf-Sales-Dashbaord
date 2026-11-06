@@ -93,6 +93,15 @@ function loadUsers(): StoredUser[] {
   try {
     const raw = JSON.parse(process.env.DASHBOARD_USERS ?? "[]") as unknown;
     if (!Array.isArray(raw)) return [];
+    for (const u of raw as { email?: unknown; passwordHash?: unknown }[]) {
+      // A bcrypt hash is 60 chars ($2a$/$2b$...). Shorter usually means a dotenv loader
+      // expanded "$..." as a variable (Vite does this in local .env files).
+      if (typeof u?.passwordHash === "string" && !/^\$2[aby]\$\d{2}\$.{53}$/.test(u.passwordHash))
+        console.error(
+          `[session] passwordHash for ${String(u.email)} is not a valid bcrypt hash. ` +
+            "In a local .env file, escape every $ as \\$ (see docs/ENV_SETUP.md).",
+        );
+    }
     return raw.filter(
       (u): u is StoredUser =>
         !!u &&

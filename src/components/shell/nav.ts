@@ -78,9 +78,11 @@ export function useShellFeeds() {
     counts,
     fresh,
     newest,
-    wa: wa.data?.items ?? [],
-    sms: sms.data?.items ?? [],
-    viber: viber.data?.items ?? [],
+    // undefined (not []) until loaded, so NotificationCenter seeds its baseline from the
+    // first real response instead of toasting every existing reply as "new".
+    wa: wa.data?.items,
+    sms: sms.data?.items,
+    viber: viber.data?.items,
     viberConnected: viber.data?.connected ?? false,
   };
 }
