@@ -10,7 +10,8 @@ function json(body: unknown, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": status === 200 ? "s-maxage=120, stale-while-revalidate=600" : "no-store",
+      // Never CDN-cache: the CDN would serve lead data without the session check.
+      "Cache-Control": "private, no-store",
     },
   });
 }

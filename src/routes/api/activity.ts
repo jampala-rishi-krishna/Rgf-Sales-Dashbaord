@@ -92,7 +92,8 @@ export const Route = createFileRoute("/api/activity")({
           status: 200,
           headers: {
             "Content-Type": "application/json",
-            "Cache-Control": "s-maxage=10, stale-while-revalidate=20",
+            // Never CDN-cache: the CDN would serve it without the session check.
+            "Cache-Control": "private, no-store",
           },
         });
       },

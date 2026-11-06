@@ -2,7 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { normalizePreLead, type PreLeadsResponse } from "@/lib/crm";
 import { fetchAllPreLeads, n8nConfig, zohoConfigured } from "@/lib/zoho.server";
 
-const CACHE = "s-maxage=600, stale-while-revalidate=1800";
+// Never CDN-cache (s-maxage): Vercel's CDN would serve lead data to requests that
+// never reach the session check. Caching happens in server memory instead (below).
+const CACHE = "private, no-store";
+// The n8n feed pages through ~8k Zoho records and takes ~80s.
+const N8N_TIMEOUT_MS = 120_000;
+const FRESH_MS = 10 * 60_000;
 
 function json(body: PreLeadsResponse, status = 200, cache = CACHE) {
   return new Response(JSON.stringify(body), {
@@ -17,7 +22,7 @@ async function viaN8n(): Promise<PreLeadsResponse | null> {
   try {
     const res = await fetch(`${base}/dashboard-pre-leads`, {
       headers,
-      signal: AbortSignal.timeout(25_000),
+      signal: AbortSignal.timeout(N8N_TIMEOUT_MS),
     });
     if (!res.ok) {
       console.warn(`[crm/pre-leads] n8n status=${res.status}`);
@@ -42,12 +47,37 @@ async function viaN8n(): Promise<PreLeadsResponse | null> {
   }
 }
 
+// Per-instance memory cache: fresh for 10 min, then served stale while one refresh
+// runs in the background, so only the very first load waits for n8n.
+let memo: { data: PreLeadsResponse; at: number } | null = null;
+let inflight: Promise<PreLeadsResponse | null> | null = null;
+
+function refresh(): Promise<PreLeadsResponse | null> {
+  inflight ??= viaN8n()
+    .then((d) => {
+      if (d) memo = { data: d, at: Date.now() };
+      return d;
+    })
+    .finally(() => {
+      inflight = null;
+    });
+  return inflight;
+}
+
+async function getCachedFeed(): Promise<PreLeadsResponse | null> {
+  if (memo) {
+    if (Date.now() - memo.at > FRESH_MS) void refresh();
+    return memo.data;
+  }
+  return refresh();
+}
+
 export const Route = createFileRoute("/api/crm/pre-leads")({
   server: {
     handlers: {
       GET: async () => {
-        const n8n = await viaN8n();
-        if (n8n) return json(n8n);
+        const cached = await getCachedFeed();
+        if (cached) return json(cached);
         if (zohoConfigured()) {
           try {
             const leads = await fetchAllPreLeads();
@@ -66,7 +96,7 @@ export const Route = createFileRoute("/api/crm/pre-leads")({
             );
           }
         }
-        return json({ connected: false, leads: [] }, 200, "s-maxage=60");
+        return json({ connected: false, leads: [] });
       },
     },
   },
