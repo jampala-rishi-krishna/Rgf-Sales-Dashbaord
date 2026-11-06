@@ -85,34 +85,57 @@ export function clearCookie(): string {
   return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secureAttr()}`;
 }
 
-interface StoredUser extends SessionUser {
+export interface StoredUser extends SessionUser {
   passwordHash: string;
 }
 
-function loadUsers(): StoredUser[] {
+const BCRYPT_RE = /^\$2[aby]\$\d{2}\$.{53}$/;
+
+/**
+ * Parses DASHBOARD_USERS, tolerating the two common paste mistakes: the whole value
+ * wrapped in quotes (copied from a .env line) and `\$` escaping (needed for Vite in
+ * local .env files, but Vercel stores the value literally). Returns problems to log.
+ */
+export function parseDashboardUsers(value: string | undefined): {
+  users: StoredUser[];
+  problems: string[];
+} {
+  const problems: string[] = [];
+  let v = (value ?? "").trim();
+  if (!v) return { users: [], problems: ["DASHBOARD_USERS is not set"] };
+  if (/^(['"]).*\1$/s.test(v)) v = v.slice(1, -1).trim();
+  v = v.split("\\$").join("$");
+  let raw: unknown;
   try {
-    const raw = JSON.parse(process.env.DASHBOARD_USERS ?? "[]") as unknown;
-    if (!Array.isArray(raw)) return [];
-    for (const u of raw as { email?: unknown; passwordHash?: unknown }[]) {
-      // A bcrypt hash is 60 chars ($2a$/$2b$...). Shorter usually means a dotenv loader
-      // expanded "$..." as a variable (Vite does this in local .env files).
-      if (typeof u?.passwordHash === "string" && !/^\$2[aby]\$\d{2}\$.{53}$/.test(u.passwordHash))
-        console.error(
-          `[session] passwordHash for ${String(u.email)} is not a valid bcrypt hash. ` +
-            "In a local .env file, escape every $ as \\$ (see docs/ENV_SETUP.md).",
-        );
-    }
-    return raw.filter(
-      (u): u is StoredUser =>
-        !!u &&
-        typeof u.email === "string" &&
-        typeof u.passwordHash === "string" &&
-        ROLES.includes(u.role),
-    );
+    raw = JSON.parse(v);
   } catch {
-    console.error("[session] DASHBOARD_USERS is not valid JSON");
-    return [];
+    return { users: [], problems: ["DASHBOARD_USERS is not valid JSON"] };
   }
+  if (!Array.isArray(raw)) return { users: [], problems: ["DASHBOARD_USERS must be a JSON array"] };
+  const users = raw.filter((u): u is StoredUser => {
+    const ok =
+      !!u &&
+      typeof u.email === "string" &&
+      typeof u.passwordHash === "string" &&
+      ROLES.includes(u.role);
+    if (!ok)
+      problems.push(
+        `DASHBOARD_USERS entry ${JSON.stringify(u?.email ?? null)} is missing email, passwordHash or a valid role`,
+      );
+    else if (!BCRYPT_RE.test(u.passwordHash))
+      // Shorter than 60 chars usually means a dotenv loader expanded "$..." (Vite does in local .env).
+      problems.push(
+        `passwordHash for ${u.email} is not a valid bcrypt hash (see docs/ENV_SETUP.md)`,
+      );
+    return ok;
+  });
+  return { users, problems };
+}
+
+function loadUsers(): StoredUser[] {
+  const { users, problems } = parseDashboardUsers(process.env.DASHBOARD_USERS);
+  for (const p of problems) console.error(`[session] ${p}`);
+  return users;
 }
 
 // Compared against when the email is unknown, so timing does not reveal valid emails.
@@ -123,9 +146,16 @@ export async function verifyCredentials(
   password: string,
 ): Promise<SessionUser | null> {
   const e = email.trim().toLowerCase();
-  const u = loadUsers().find((x) => x.email.trim().toLowerCase() === e);
+  const users = loadUsers();
+  const u = users.find((x) => x.email.trim().toLowerCase() === e);
   const ok = await bcrypt.compare(password, u?.passwordHash ?? DUMMY_HASH).catch(() => false);
-  if (!u || !ok) return null;
+  if (!u || !ok) {
+    // Server log only (never sent to the browser); helps diagnose env setup.
+    console.warn(
+      `[session] login failed: ${users.length} user(s) configured, email ${u ? "found, wrong password" : "not found"}`,
+    );
+    return null;
+  }
   return { email: u.email, name: u.name || u.email, role: u.role };
 }
 
