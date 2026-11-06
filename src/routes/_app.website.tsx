@@ -1,288 +1,235 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FileText } from "lucide-react";
+import { ArrowLeft, Info, MessagesSquare, Search } from "lucide-react";
+import { ChannelGlyph } from "@/components/shared";
+import { useWebsiteFeed } from "@/hooks/use-feeds";
+import { formatManila } from "@/lib/channels";
+import { ChatThread, ReplyComposer } from "@/components/website/chat-thread";
+import { VisitorPanel } from "@/components/website/visitor-panel";
+import {
+  initials,
+  location,
+  sessionLabel,
+  statusMeta,
+  type WebsiteChatSession,
+} from "@/components/website/types";
 
 export const Route = createFileRoute("/_app/website")({
+  validateSearch: (s: Record<string, unknown>): { session?: string } =>
+    typeof s.session === "string" && s.session ? { session: s.session } : {},
   component: WebsiteTab,
 });
 
-interface WebsiteChatMessage {
-  sender: "visitor" | "agent";
-  text: string;
-  timestamp: string;
-  attachmentUrl?: string | null;
-  attachmentType?: "price_list_pdf" | "catalog_pdf" | null;
-}
-
-interface WebsiteChatSession {
-  sessionId: string;
-  visitorName: string;
-  visitorEmail: string;
-  visitorPhone: string;
-  businessType: string;
-  businessSegment: string;
-  visitorCity: string;
-  visitorRegion: string;
-  visitorCountry: string;
-  pageUrl: string;
-  status: "ai" | "escalated";
-  conversationStage: string;
-  firstSeenAt: string;
-  lastMessageAt: string;
-  messageCount: number;
-  messages: WebsiteChatMessage[];
-}
-
-function formatShortDateTime(ts: string): string {
-  if (!ts) return "";
-  try {
-    return new Date(ts).toLocaleString("en-PH", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return ts;
-  }
-}
-
-function sessionLabel(s: WebsiteChatSession): string {
-  return `Visitor · ${s.sessionId.slice(-8)}`;
-}
-
-function statusBadge(status: WebsiteChatSession["status"]) {
-  if (status === "escalated") return { label: "Needs Human", bg: "#86000B" };
-  return { label: "AI Handling", bg: "#33673B" };
-}
-
-function useWebsiteChatSessions() {
-  return useQuery({
-    queryKey: ["website-chat-sessions"],
-    queryFn: async () => {
-      const r = await fetch("/api/website-chat-sessions");
-      if (!r.ok) throw new Error("website-chat-sessions");
-      const json = await r.json();
-      return (json.sessions ?? []) as WebsiteChatSession[];
-    },
-    refetchInterval: 60000,
-  });
-}
+type Filter = "all" | "ai" | "escalated";
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "ai", label: "AI Handling" },
+  { key: "escalated", label: "Needs Human" },
+];
 
 function WebsiteTab() {
-  const { data, isLoading, error } = useWebsiteChatSessions();
+  const { session: sessionParam } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const select = (id: string | null) => navigate({ search: id ? { session: id } : {} });
+
+  const { data, isLoading, error } = useWebsiteFeed(30_000);
+  const all = useMemo(() => (data ?? []) as unknown as WebsiteChatSession[], [data]);
   const [search, setSearch] = useState("");
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [showInfo, setShowInfo] = useState(false);
 
   const sessions = useMemo(() => {
-    const sorted = [...(data ?? [])].sort((a, b) =>
+    const sorted = [...all].sort((a, b) =>
       (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? ""),
     );
     const q = search.toLowerCase().trim();
-    if (!q) return sorted;
-    return sorted.filter((s) =>
-      [s.visitorName, s.visitorEmail, s.businessType, s.sessionId]
+    return sorted.filter((s) => {
+      if (filter !== "all" && s.status !== filter) return false;
+      if (!q) return true;
+      return [s.visitorName, s.visitorEmail, s.visitorPhone, s.businessType, s.sessionId]
         .join(" ")
         .toLowerCase()
-        .includes(q),
-    );
-  }, [data, search]);
+        .includes(q);
+    });
+  }, [all, search, filter]);
 
-  const active = sessions.find((s) => s.sessionId === activeSessionId) ?? sessions[0];
+  const escalatedCount = useMemo(() => all.filter((s) => s.status === "escalated").length, [all]);
+  const active = sessionParam ? all.find((s) => s.sessionId === sessionParam) : undefined;
 
   return (
     <div
-      className="bg-white rounded-xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-[35%_65%]"
-      style={{ height: "calc(100vh - 7rem - 1rem)" }}
+      data-channel="web"
+      className="grid h-[calc(100dvh-7rem)] min-h-[480px] grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 md:grid-cols-[minmax(280px,34%)_1fr] xl:grid-cols-[minmax(280px,30%)_1fr_280px]"
     >
-      {/* ── Left panel — session list ───────────────────────────────────── */}
-      <div className="border-r flex flex-col min-h-0" style={{ backgroundColor: "#FFEBCE" }}>
-        <div className="px-4 py-3 border-b shrink-0">
-          <div className="font-black text-lg" style={{ color: "#86000B" }}>
-            Website
+      {/* Session list */}
+      <aside
+        className={`min-h-0 flex-col border-r border-[#e0d6c8] bg-[#FFEBCE]/60 ${active ? "hidden md:flex" : "flex"}`}
+      >
+        <div className="shrink-0 space-y-3 p-3">
+          <div className="flex items-center gap-2">
+            <ChannelGlyph channel="web" size={22} />
+            <h1 className="text-base font-bold text-[#86000B]">Website chat</h1>
+            {escalatedCount > 0 && (
+              <span className="ml-auto rounded-full bg-[#86000B] px-2 py-0.5 text-[10px] font-semibold text-white">
+                {escalatedCount} need human
+              </span>
+            )}
+          </div>
+          <label className="flex items-center gap-2 rounded-full bg-white px-3 py-2 ring-1 ring-[#e0d6c8] focus-within:ring-[#86000B]/50">
+            <Search className="size-4 text-[#8a8a8a]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name, email, business…"
+              aria-label="Search website chats"
+              className="w-full bg-transparent text-sm text-[#1B2419] placeholder:text-[#8a8a8a] focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-1.5">
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                aria-pressed={filter === f.key}
+                onClick={() => setFilter(f.key)}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors motion-reduce:transition-none ${filter === f.key ? "bg-[#86000B] text-white" : "bg-white text-[#6b6b6b] ring-1 ring-[#e0d6c8] hover:bg-[#FFF8F0]"}`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="p-3 border-b shrink-0">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, business or session…"
-            className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none"
-          />
-        </div>
-        <div className="overflow-y-auto flex-1">
-          {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isLoading &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="mx-3 mb-2 h-16 animate-pulse rounded-xl bg-white/70 motion-reduce:animate-none"
+              />
+            ))}
           {error && (
-            <div className="p-4 text-sm text-red-600">Failed to load website chat sessions.</div>
+            <div className="m-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              Failed to load website chat sessions.
+            </div>
           )}
-          {!isLoading && sessions.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">No conversations yet.</div>
+          {!isLoading && !error && sessions.length === 0 && (
+            <div className="flex flex-col items-center gap-2 py-10 text-sm text-[#6b6b6b]">
+              <MessagesSquare className="size-6" /> No conversations yet.
+            </div>
           )}
           {sessions.map((s) => {
             const sel = active?.sessionId === s.sessionId;
-            const badge = statusBadge(s.status);
-            const primary = s.visitorName || sessionLabel(s);
-            const secondary =
-              s.businessType ||
-              (s.visitorCity && s.visitorCountry
-                ? `${s.visitorCity}, ${s.visitorCountry}`
-                : s.pageUrl);
+            const st = statusMeta(s.status);
+            const lastMsg = s.messages?.[s.messages.length - 1];
+            const secondary = s.businessType || location(s) || s.pageUrl;
             return (
               <button
                 key={s.sessionId}
-                onClick={() => setActiveSessionId(s.sessionId)}
-                className="w-full text-left px-4 py-3 border-b hover:bg-white transition-colors"
-                style={{
-                  backgroundColor: sel ? "#FFFFFF" : "transparent",
-                  borderLeft: sel ? "3px solid #86000B" : "3px solid transparent",
-                }}
+                type="button"
+                onClick={() => select(s.sessionId)}
+                aria-current={sel ? "true" : undefined}
+                className={`flex w-full items-start gap-3 border-l-[3px] px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#86000B]/40 motion-reduce:transition-none ${
+                  sel ? "border-[#86000B] bg-white" : "border-transparent hover:bg-white/70"
+                }`}
               >
-                <div className="flex items-center gap-2">
-                  <div className="font-bold text-sm truncate flex-1" style={{ color: "#1B2419" }}>
-                    {primary}
-                  </div>
-                  <span
-                    className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white tracking-wide"
-                    style={{ backgroundColor: badge.bg }}
-                  >
-                    {badge.label}
-                  </span>
+                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-[#86000B] ring-1 ring-[#86000B]/15">
+                  {initials(sessionLabel(s))}
                 </div>
-                {secondary && (
-                  <div className="text-[11px] text-gray-500 truncate mt-0.5">{secondary}</div>
-                )}
-                <div className="flex items-center justify-between mt-1">
-                  <div className="text-[10px] text-gray-400">
-                    First seen {formatShortDateTime(s.firstSeenAt)}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1 truncate text-sm font-semibold text-[#1B2419]">
+                      {sessionLabel(s)}
+                    </div>
+                    <span className="shrink-0 text-[10px] text-[#8a8a8a]">
+                      {formatManila(s.lastMessageAt, { month: "short", day: "numeric" })}
+                    </span>
                   </div>
-                  <span
-                    className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
-                    style={{ backgroundColor: "#eee", color: "#666" }}
-                  >
-                    {s.messageCount} msgs
-                  </span>
+                  {secondary && (
+                    <div className="truncate text-[11px] text-[#6b6b6b]">{secondary}</div>
+                  )}
+                  <div className="mt-1 flex items-center gap-2">
+                    <div className="min-w-0 flex-1 truncate text-xs text-[#6b6b6b]">
+                      {lastMsg
+                        ? `${lastMsg.sender === "agent" ? "Martin: " : ""}${lastMsg.text || "Attachment"}`
+                        : `${s.messageCount} msgs`}
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${st.cls}`}
+                    >
+                      {st.label}
+                    </span>
+                  </div>
                 </div>
-                {s.lastMessageAt && (
-                  <div className="text-[10px] text-gray-400 mt-0.5">
-                    Last message {formatShortDateTime(s.lastMessageAt)}
-                  </div>
-                )}
               </button>
             );
           })}
         </div>
-      </div>
+      </aside>
 
-      {/* ── Right panel — chat view ─────────────────────────────────────── */}
-      <div className="flex flex-col min-h-0" style={{ backgroundColor: "#FFF8F0" }}>
+      {/* Chat */}
+      <section className={`min-h-0 flex-col ${active ? "flex" : "hidden md:flex"}`}>
         {!active ? (
-          <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-            Select a conversation to view
+          <div className="flex h-full flex-col items-center justify-center gap-3 bg-[#FFF8F0] p-6 text-center text-sm text-[#6b6b6b]">
+            <ChannelGlyph channel="web" size={32} />
+            {sessionParam && !isLoading
+              ? "That session wasn't found."
+              : "Select a conversation to view"}
           </div>
         ) : (
           <>
-            {/* Chat header */}
-            <div
-              className="px-5 py-3 flex items-center gap-3 shrink-0"
-              style={{ backgroundColor: "#86000B" }}
-            >
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                {(active.visitorName || sessionLabel(active)).slice(0, 2).toUpperCase()}
+            <header className="flex shrink-0 items-center gap-3 bg-[#86000B] px-3 py-2.5 md:px-5">
+              <button
+                type="button"
+                onClick={() => select(null)}
+                aria-label="Back to conversations"
+                className="rounded-full p-1 text-white/90 hover:bg-white/10 md:hidden"
+              >
+                <ArrowLeft className="size-5" />
+              </button>
+              <div className="grid size-9 shrink-0 place-items-center rounded-full bg-white/20 text-sm font-bold text-white">
+                {initials(sessionLabel(active))}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-white font-bold leading-tight truncate">
-                  {active.visitorName || sessionLabel(active)}
+                <div className="truncate font-bold leading-tight text-white">
+                  {sessionLabel(active)}
                 </div>
-                <div className="text-white/70 text-xs truncate">
-                  {[
-                    active.businessType,
-                    [active.visitorCity, active.visitorRegion, active.visitorCountry]
-                      .filter(Boolean)
-                      .join(", "),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
+                <div className="truncate text-xs text-white/70">
+                  {[active.businessType, location(active)].filter(Boolean).join(" · ") ||
+                    "Website visitor"}
                 </div>
               </div>
               <span
-                className="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white"
-                style={{ backgroundColor: statusBadge(active.status).bg }}
+                className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${active.status === "escalated" ? "bg-white text-[#86000B]" : "bg-white/15 text-white"}`}
               >
-                {statusBadge(active.status).label}
+                {statusMeta(active.status).label}
               </span>
-            </div>
-
-            {/* Message bubbles */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-3">
-              {active.messages.length === 0 && (
-                <div className="text-center text-sm text-gray-400 mt-8">No messages yet.</div>
+              <button
+                type="button"
+                onClick={() => setShowInfo((v) => !v)}
+                aria-label="Visitor info"
+                aria-pressed={showInfo}
+                className="rounded-full p-1.5 text-white/90 hover:bg-white/10 xl:hidden"
+              >
+                <Info className="size-5" />
+              </button>
+            </header>
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              <ChatThread session={active} />
+              <ReplyComposer sessionId={active.sessionId} />
+              {showInfo && (
+                <div className="absolute inset-y-0 right-0 z-10 w-full max-w-xs border-l border-[#e0d6c8] shadow-xl xl:hidden">
+                  <VisitorPanel session={active} onClose={() => setShowInfo(false)} />
+                </div>
               )}
-              {active.messages.map((m, i) => {
-                const out = m.sender === "agent";
-                return (
-                  <div key={i} className={`flex ${out ? "justify-end" : "justify-start"}`}>
-                    <div className="max-w-[70%]">
-                      <div
-                        className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm ${
-                          out ? "rounded-br-sm text-white" : "rounded-bl-sm bg-white"
-                        }`}
-                        style={out ? { backgroundColor: "#86000B" } : { color: "#1B2419" }}
-                      >
-                        <span style={{ whiteSpace: "pre-wrap" }}>{m.text}</span>
-                      </div>
-                      {m.attachmentUrl && (
-                        <a
-                          href={m.attachmentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 flex items-center gap-3 rounded-lg p-3 transition-opacity hover:opacity-90"
-                          style={{
-                            backgroundColor: out ? "rgba(255,255,255,0.15)" : "#F7F4EF",
-                            border: out ? "1px solid rgba(255,255,255,0.3)" : "1px solid #e0d6c8",
-                          }}
-                        >
-                          <div
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-                            style={{ backgroundColor: "#86000B" }}
-                          >
-                            <FileText className="h-5 w-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className="truncate text-sm font-medium"
-                              style={{ color: out ? "#fff" : "#1B2419" }}
-                            >
-                              {m.attachmentType === "price_list_pdf"
-                                ? "Price List.pdf"
-                                : "Product Catalog.pdf"}
-                            </div>
-                            <div
-                              className="text-xs"
-                              style={{
-                                color: out ? "rgba(255,255,255,0.7)" : "#666",
-                              }}
-                            >
-                              Tap to view
-                            </div>
-                          </div>
-                        </a>
-                      )}
-                      <div
-                        className={`text-[10px] text-gray-500 mt-0.5 ${
-                          out ? "text-right" : "text-left"
-                        }`}
-                      >
-                        {formatShortDateTime(m.timestamp)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </>
         )}
-      </div>
+      </section>
+
+      {/* Visitor info (wide screens) */}
+      <aside className="hidden min-h-0 border-l border-[#e0d6c8] xl:block">
+        {active ? <VisitorPanel session={active} /> : <div className="h-full bg-white" />}
+      </aside>
     </div>
   );
 }

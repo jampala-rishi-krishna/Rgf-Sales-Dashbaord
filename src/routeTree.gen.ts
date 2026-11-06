@@ -16,18 +16,21 @@ import { Route as AppCallsRouteImport } from './routes/_app.calls'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
+import { Route as AppViberRouteImport } from './routes/_app.viber'
 import { Route as AppWebsiteRouteImport } from './routes/_app.website'
 import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
 import { Route as ApiActivityRouteImport } from './routes/api/activity'
 import { Route as ApiAgentHealthRouteImport } from './routes/api/agent-health'
 import { Route as ApiCampaignRunsRouteImport } from './routes/api/campaign-runs'
 import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
+import { Route as ApiGmailSendRouteImport } from './routes/api/gmail-send'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
 import { Route as ApiSmsConversationsRouteImport } from './routes/api/sms-conversations'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
+import { Route as ApiViberConversationsRouteImport } from './routes/api/viber-conversations'
 import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website-chat-sessions'
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
 import { Route as ApiActionsBulkRouteImport } from './routes/api/actions/bulk'
@@ -72,6 +75,11 @@ const AppSmsRoute = AppSmsRouteImport.update({
   path: '/sms',
   getParentRoute: () => AppRoute,
 } as any)
+const AppViberRoute = AppViberRouteImport.update({
+  id: '/viber',
+  path: '/viber',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppWebsiteRoute = AppWebsiteRouteImport.update({
   id: '/website',
   path: '/website',
@@ -102,6 +110,11 @@ const ApiGmailFlagRoute = ApiGmailFlagRouteImport.update({
   path: '/api/gmail-flag',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGmailSendRoute = ApiGmailSendRouteImport.update({
+  id: '/api/gmail-send',
+  path: '/api/gmail-send',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGmailThreadRoute = ApiGmailThreadRouteImport.update({
   id: '/api/gmail-thread',
   path: '/api/gmail-thread',
@@ -130,6 +143,11 @@ const ApiVapiCallsRoute = ApiVapiCallsRouteImport.update({
 const ApiVapiRecordingRoute = ApiVapiRecordingRouteImport.update({
   id: '/api/vapi-recording',
   path: '/api/vapi-recording',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiViberConversationsRoute = ApiViberConversationsRouteImport.update({
+  id: '/api/viber-conversations',
+  path: '/api/viber-conversations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebsiteChatSessionsRoute = ApiWebsiteChatSessionsRouteImport.update({
@@ -186,18 +204,21 @@ export interface FileRoutesByFullPath {
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
+  '/viber': typeof AppViberRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
   '/api/activity': typeof ApiActivityRoute
   '/api/agent-health': typeof ApiAgentHealthRoute
   '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
+  '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/viber-conversations': typeof ApiViberConversationsRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/api/actions/bulk': typeof ApiActionsBulkRoute
@@ -214,18 +235,21 @@ export interface FileRoutesByTo {
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
+  '/viber': typeof AppViberRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
   '/api/activity': typeof ApiActivityRoute
   '/api/agent-health': typeof ApiAgentHealthRoute
   '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
+  '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/viber-conversations': typeof ApiViberConversationsRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/': typeof AppIndexRoute
@@ -245,18 +269,21 @@ export interface FileRoutesById {
   '/_app/email': typeof AppEmailRoute
   '/_app/inbox': typeof AppInboxRoute
   '/_app/sms': typeof AppSmsRoute
+  '/_app/viber': typeof AppViberRoute
   '/_app/website': typeof AppWebsiteRoute
   '/_app/whatsapp': typeof AppWhatsappRoute
   '/api/activity': typeof ApiActivityRoute
   '/api/agent-health': typeof ApiAgentHealthRoute
   '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
+  '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/viber-conversations': typeof ApiViberConversationsRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/_app/': typeof AppIndexRoute
@@ -277,18 +304,21 @@ export interface FileRouteTypes {
     | '/email'
     | '/inbox'
     | '/sms'
+    | '/viber'
     | '/website'
     | '/whatsapp'
     | '/api/activity'
     | '/api/agent-health'
     | '/api/campaign-runs'
     | '/api/gmail-flag'
+    | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/viber-conversations'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/api/actions/bulk'
@@ -305,18 +335,21 @@ export interface FileRouteTypes {
     | '/email'
     | '/inbox'
     | '/sms'
+    | '/viber'
     | '/website'
     | '/whatsapp'
     | '/api/activity'
     | '/api/agent-health'
     | '/api/campaign-runs'
     | '/api/gmail-flag'
+    | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/viber-conversations'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/'
@@ -335,18 +368,21 @@ export interface FileRouteTypes {
     | '/_app/email'
     | '/_app/inbox'
     | '/_app/sms'
+    | '/_app/viber'
     | '/_app/website'
     | '/_app/whatsapp'
     | '/api/activity'
     | '/api/agent-health'
     | '/api/campaign-runs'
     | '/api/gmail-flag'
+    | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/viber-conversations'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/_app/'
@@ -366,12 +402,14 @@ export interface RootRouteChildren {
   ApiAgentHealthRoute: typeof ApiAgentHealthRoute
   ApiCampaignRunsRoute: typeof ApiCampaignRunsRoute
   ApiGmailFlagRoute: typeof ApiGmailFlagRoute
+  ApiGmailSendRoute: typeof ApiGmailSendRoute
   ApiGmailThreadRoute: typeof ApiGmailThreadRoute
   ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
   ApiSmsConversationsRoute: typeof ApiSmsConversationsRoute
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
   ApiVapiRecordingRoute: typeof ApiVapiRecordingRoute
+  ApiViberConversationsRoute: typeof ApiViberConversationsRoute
   ApiWebsiteChatSessionsRoute: typeof ApiWebsiteChatSessionsRoute
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
   ApiActionsBulkRoute: typeof ApiActionsBulkRoute
@@ -434,6 +472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSmsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/viber': {
+      id: '/_app/viber'
+      path: '/viber'
+      fullPath: '/viber'
+      preLoaderRoute: typeof AppViberRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/website': {
       id: '/_app/website'
       path: '/website'
@@ -476,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGmailFlagRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/gmail-send': {
+      id: '/api/gmail-send'
+      path: '/api/gmail-send'
+      fullPath: '/api/gmail-send'
+      preLoaderRoute: typeof ApiGmailSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/gmail-thread': {
       id: '/api/gmail-thread'
       path: '/api/gmail-thread'
@@ -516,6 +568,13 @@ declare module '@tanstack/react-router' {
       path: '/api/vapi-recording'
       fullPath: '/api/vapi-recording'
       preLoaderRoute: typeof ApiVapiRecordingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/viber-conversations': {
+      id: '/api/viber-conversations'
+      path: '/api/viber-conversations'
+      fullPath: '/api/viber-conversations'
+      preLoaderRoute: typeof ApiViberConversationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/website-chat-sessions': {
@@ -589,6 +648,7 @@ interface AppRouteChildren {
   AppEmailRoute: typeof AppEmailRoute
   AppInboxRoute: typeof AppInboxRoute
   AppSmsRoute: typeof AppSmsRoute
+  AppViberRoute: typeof AppViberRoute
   AppWebsiteRoute: typeof AppWebsiteRoute
   AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -599,6 +659,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppEmailRoute: AppEmailRoute,
   AppInboxRoute: AppInboxRoute,
   AppSmsRoute: AppSmsRoute,
+  AppViberRoute: AppViberRoute,
   AppWebsiteRoute: AppWebsiteRoute,
   AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
@@ -613,12 +674,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentHealthRoute: ApiAgentHealthRoute,
   ApiCampaignRunsRoute: ApiCampaignRunsRoute,
   ApiGmailFlagRoute: ApiGmailFlagRoute,
+  ApiGmailSendRoute: ApiGmailSendRoute,
   ApiGmailThreadRoute: ApiGmailThreadRoute,
   ApiGmailThreadsRoute: ApiGmailThreadsRoute,
   ApiSmsConversationsRoute: ApiSmsConversationsRoute,
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,
   ApiVapiRecordingRoute: ApiVapiRecordingRoute,
+  ApiViberConversationsRoute: ApiViberConversationsRoute,
   ApiWebsiteChatSessionsRoute: ApiWebsiteChatSessionsRoute,
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
   ApiActionsBulkRoute: ApiActionsBulkRoute,

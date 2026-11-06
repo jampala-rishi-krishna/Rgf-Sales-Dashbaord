@@ -1,68 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { RefreshCw, Star } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { ComposeWindow } from "@/components/email/ComposeWindow";
+import { ComposePill, MailRail, MailTabs } from "@/components/email/MailRail";
+import { FilterChips, GmailSearch, ThreadList } from "@/components/email/ThreadList";
+import { ThreadView } from "@/components/email/ThreadView";
+import {
+  MAILBOXES,
+  PAGE_SIZE,
+  dedupeByThreadId,
+  matchesChip,
+  matchesMailbox,
+  type ChipKey,
+  type GmailThreadSummary,
+  type MailboxKey,
+} from "@/components/email/types";
 
 export const Route = createFileRoute("/_app/email")({
   component: EmailTab,
 });
-
-interface GmailThreadSummary {
-  threadId: string;
-  subject: string;
-  from: string;
-  to: string;
-  date: string;
-  direction: "inbound" | "outbound";
-  snippet: string;
-  messageCount: number;
-  isUnread: boolean;
-  isFlagged: boolean;
-}
 
 interface GmailThreadsResponse {
   threads: GmailThreadSummary[];
   nextPageToken: string | null;
 }
 
-interface GmailMessage {
-  id: string;
-  from: string;
-  to: string;
-  subject: string;
-  date: string;
-  direction: "inbound" | "outbound";
-  htmlBody: string;
-  snippet: string;
-}
-
-function formatTs(ts: string): string {
-  if (!ts) return "";
-  try {
-    return new Date(ts).toLocaleString("en-PH", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return ts;
-  }
-}
-
-function parseSender(raw: string): { name: string; email: string } {
-  const match = raw.match(/^\s*"?([^"<]*)"?\s*<([^>]+)>\s*$/);
-  if (match) return { name: match[1].trim(), email: match[2].trim() };
-  const emailMatch = raw.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/);
-  return { name: "", email: emailMatch?.[0] ?? raw.trim() };
-}
-
-function dedupeByThreadId(threads: GmailThreadSummary[]): GmailThreadSummary[] {
-  const map = new Map<string, GmailThreadSummary>();
-  for (const t of threads) map.set(t.threadId, t);
-  return Array.from(map.values());
-}
-
+// Same request/pageToken contract as before the redesign: 40 per Gmail page,
+// first page auto-refreshes every 60s, older pages are fetched on demand.
 function useGmailThreads(pageToken: string | null) {
   return useQuery({
     queryKey: ["gmail-threads", pageToken],
@@ -86,7 +51,6 @@ function EmailTab() {
   const [pageToken, setPageToken] = useState<string | null>(null);
   const [allThreads, setAllThreads] = useState<GmailThreadSummary[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
-
   const { data, isLoading, isFetching, error, refetch } = useGmailThreads(pageToken);
 
   useEffect(() => {
@@ -95,12 +59,14 @@ function EmailTab() {
     setNextPageToken(data.nextPageToken);
   }, [data]);
 
+  const [mailbox, setMailbox] = useState<MailboxKey>("inbox");
+  const [chips, setChips] = useState<Set<ChipKey>>(new Set());
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "flagged">("all");
-  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
-  const [thread, setThread] = useState<GmailMessage[]>([]);
-  const [threadLoading, setThreadLoading] = useState(false);
-  const [threadError, setThreadError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [composeOpen, setComposeOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const flagMutation = useMutation({
     mutationFn: async ({ threadId, flagged }: { threadId: string; flagged: boolean }) => {
@@ -112,282 +78,193 @@ function EmailTab() {
       if (!res.ok) throw new Error("flag failed");
       return res.json();
     },
-    onSuccess: (_result, variables) => {
+    onMutate: ({ threadId, flagged }) => {
       setAllThreads((prev) =>
-        prev.map((t) =>
-          t.threadId === variables.threadId ? { ...t, isFlagged: variables.flagged } : t,
-        ),
+        prev.map((t) => (t.threadId === threadId ? { ...t, isFlagged: flagged } : t)),
       );
-      queryClient.invalidateQueries({ queryKey: ["gmail-threads"] });
     },
+    onError: (_e, { threadId, flagged }) => {
+      setAllThreads((prev) =>
+        prev.map((t) => (t.threadId === threadId ? { ...t, isFlagged: !flagged } : t)),
+      );
+      toast.error("Couldn't update star in Gmail");
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["gmail-threads"] }),
   });
+  const toggleStar = (t: GmailThreadSummary) =>
+    flagMutation.mutate({ threadId: t.threadId, flagged: !t.isFlagged });
 
-  const threads = useMemo(() => {
-    const query = search.toLowerCase();
-    let list = allThreads;
-    if (filter === "flagged") list = list.filter((item) => item.isFlagged);
-    if (!query) return list;
-    return list.filter((item) =>
-      [item.subject, item.from, item.to, item.snippet].join(" ").toLowerCase().includes(query),
-    );
-  }, [allThreads, search, filter]);
+  const counts = useMemo(() => {
+    const c = {} as Record<MailboxKey, number>;
+    for (const { key } of MAILBOXES)
+      c[key] = allThreads.filter((t) => matchesMailbox(t, key)).length;
+    return c;
+  }, [allThreads]);
+  const unread = useMemo(() => allThreads.filter((t) => t.isUnread).length, [allThreads]);
 
-  const selected = threads.find((item) => item.threadId === selectedThreadId) ?? null;
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return allThreads
+      .filter((t) => matchesMailbox(t, mailbox))
+      .filter((t) => [...chips].every((c) => matchesChip(t, c)))
+      .filter((t) => !q || [t.subject, t.from, t.to, t.snippet].join(" ").toLowerCase().includes(q))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [allThreads, mailbox, chips, search]);
 
   useEffect(() => {
-    if (!selectedThreadId) {
-      setThread([]);
-      setThreadError(null);
-      return;
-    }
+    setPage(0);
+    setChecked(new Set());
+  }, [mailbox, chips, search]);
 
-    setThreadLoading(true);
-    setThread([]);
-    setThreadError(null);
+  const pageThreads = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const hasMoreLoaded = (page + 1) * PAGE_SIZE < filtered.length;
+  const canNext = hasMoreLoaded || !!nextPageToken;
+  const totalLabel = nextPageToken ? "many" : String(filtered.length);
 
-    fetch(`/api/gmail-thread?id=${encodeURIComponent(selectedThreadId)}`)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.messages && result.messages.length > 0) {
-          setThread(result.messages);
-        } else {
-          setThreadError("No messages found in this Gmail thread.");
-        }
-      })
-      .catch(() => setThreadError("Failed to load thread from Gmail."))
-      .finally(() => setThreadLoading(false));
-  }, [selectedThreadId]);
-
-  const loadMore = () => {
-    if (!nextPageToken) return;
-    // If the page we're trying to load is the one that just failed, pageToken
-    // is already set to nextPageToken (its own fetch never got far enough to
-    // advance nextPageToken) — a plain setState would be a no-op, so retry
-    // via refetch() instead of getting stuck.
-    if (nextPageToken === pageToken) {
-      refetch();
-    } else {
-      setPageToken(nextPageToken);
-    }
+  const goNext = () => {
+    if (!hasMoreLoaded && nextPageToken) setPageToken(nextPageToken);
+    setPage((p) => p + 1);
   };
+
+  const selected = allThreads.find((t) => t.threadId === selectedId) ?? null;
+
+  // Gmail-ish shortcuts: "/" search, j/k move, Enter open, Escape/u back to list, c compose.
+  const [cursor, setCursor] = useState(0);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (e.key === "c") {
+        setComposeOpen(true);
+      } else if ((e.key === "Escape" || e.key === "u") && selectedId) {
+        setSelectedId(null);
+      } else if (!selectedId && (e.key === "j" || e.key === "k")) {
+        setCursor((c) =>
+          Math.max(0, Math.min(pageThreads.length - 1, c + (e.key === "j" ? 1 : -1))),
+        );
+      } else if (!selectedId && e.key === "Enter" && pageThreads[cursor]) {
+        setSelectedId(pageThreads[cursor].threadId);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, pageThreads, cursor]);
+
+  const listError = error
+    ? allThreads.length
+      ? "Failed to load more emails — try again."
+      : "Couldn't reach Gmail. Check the connection and refresh."
+    : null;
 
   return (
     <div
-      className="bg-white rounded-xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-[35%_65%]"
-      style={{ height: "calc(100vh - 7rem - 1rem)" }}
+      data-channel="email"
+      className="h-full min-h-0 flex flex-col bg-[var(--ch-app-bg)] text-[var(--ch-text)]"
     >
-      <div
-        className="border-r flex flex-col overflow-hidden"
-        style={{ backgroundColor: "#FFEBCE" }}
-      >
-        <div className="px-4 py-3 border-b flex items-center justify-between">
-          <div className="font-black text-lg" style={{ color: "#86000B" }}>
-            Gmail Inbox
-          </div>
-          <button
-            onClick={() => refetch()}
-            className="p-1.5 rounded-md hover:bg-white text-gray-400 hover:text-gray-600 transition-colors"
-            title="Refresh Gmail inbox"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="p-3 border-b">
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search emails…"
-            className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none"
+      <header className="flex items-center gap-3 px-3 md:pl-6 md:pr-4 py-2 shrink-0">
+        <span
+          className="hidden md:flex items-center gap-2 w-[224px] shrink-0 text-[22px] text-[var(--ch-text-2)]"
+          aria-hidden
+        >
+          <svg viewBox="0 0 48 36" className="h-6 w-8">
+            <path fill="#4285F4" d="M3 36h8V17L0 9v24c0 1.7 1.3 3 3 3z" />
+            <path fill="#34A853" d="M37 36h8c1.7 0 3-1.3 3-3V9l-11 8z" />
+            <path fill="#FBBC04" d="M37 3v14l11-8V5c0-3.7-4.2-5.8-7.2-3.6z" />
+            <path fill="#EA4335" d="M11 17V3l13 9.8L37 3v14L24 26.8z" />
+            <path fill="#C5221F" d="M0 5v4l11 8V3L7.2 1.4C4.2-.8 0 1.3 0 5z" />
+          </svg>
+          Mail
+        </span>
+        <GmailSearch ref={searchRef} value={search} onChange={setSearch} />
+      </header>
+
+      <div className="flex flex-1 min-h-0">
+        <div className="hidden md:block">
+          <MailRail
+            active={mailbox}
+            counts={counts}
+            unread={unread}
+            onSelect={(k) => {
+              setMailbox(k);
+              setSelectedId(null);
+            }}
+            onCompose={() => setComposeOpen(true)}
           />
         </div>
-        <div className="px-3 py-2 border-b flex gap-1.5">
-          {(["all", "flagged"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
-              style={{
-                color: filter === f ? "#FFFFFF" : "#1B2419",
-                backgroundColor: filter === f ? "#86000B" : "#FFFFFF",
-                border: "1px solid #e0d6c8",
-              }}
-            >
-              {f === "all" ? "All" : "Flagged"}
-            </button>
-          ))}
-        </div>
-        <div className="overflow-y-auto flex-1">
-          {isLoading && <div className="p-4 text-sm text-gray-500">Loading…</div>}
-          {error && allThreads.length === 0 && (
-            <div className="p-4 text-sm text-red-600">Failed to load Gmail threads.</div>
-          )}
-          {!isLoading && !error && threads.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">No emails found.</div>
-          )}
-          {threads.map((item) => {
-            const sender = parseSender(item.direction === "outbound" ? item.to : item.from);
-            const isSelected = selectedThreadId === item.threadId;
-            return (
-              <button
-                key={item.threadId}
-                onClick={() => setSelectedThreadId(item.threadId)}
-                className="w-full text-left px-4 py-3 border-b transition-colors hover:bg-white"
-                style={{
-                  backgroundColor: isSelected ? "#FFFFFF" : "transparent",
-                  borderLeft: isSelected ? "3px solid #86000B" : "3px solid transparent",
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  {item.isUnread && (
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: "#86000B" }}
-                    />
-                  )}
-                  <div className="font-bold text-sm truncate flex-1" style={{ color: "#1B2419" }}>
-                    {item.subject || "(no subject)"}
-                  </div>
-                  <div className="text-[10px] text-gray-400 shrink-0">{formatTs(item.date)}</div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      flagMutation.mutate({ threadId: item.threadId, flagged: !item.isFlagged });
-                    }}
-                    className="shrink-0 p-0.5 rounded hover:bg-gray-100"
-                    title={item.isFlagged ? "Unflag" : "Flag"}
-                  >
-                    <Star
-                      className="w-3.5 h-3.5"
-                      style={{ color: item.isFlagged ? "#86000B" : "#bbb" }}
-                      fill={item.isFlagged ? "#86000B" : "none"}
-                    />
-                  </button>
-                </div>
-                <div className="text-xs text-gray-600 truncate mt-0.5">
-                  {sender.name ? `${sender.name} <${sender.email}>` : sender.email}
-                </div>
-                <div className="text-[11px] text-gray-500 truncate mt-0.5">{item.snippet}</div>
-              </button>
-            );
-          })}
-          {nextPageToken && (
-            <div className="p-3 space-y-1.5">
-              {error && allThreads.length > 0 && (
-                <div className="text-xs text-red-600 text-center">
-                  Failed to load more emails — try again.
-                </div>
-              )}
-              <button
-                onClick={loadMore}
-                disabled={isFetching}
-                className="w-full py-2 text-xs font-semibold rounded-md transition-colors disabled:opacity-50"
-                style={{
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #e0d6c8",
-                  color: "#86000B",
-                }}
-              >
-                {isFetching ? "Loading…" : "Load more emails"}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
 
-      <div className="relative overflow-hidden">
-        <div className="overflow-y-auto bg-white absolute inset-0">
-          {!selected ? (
-            <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-              Select an email to view
-            </div>
+        <main className="flex-1 min-w-0 flex flex-col bg-[var(--ch-panel)] md:rounded-2xl md:mr-4 md:mb-4 overflow-hidden">
+          {selected ? (
+            <ThreadView
+              thread={selected}
+              onBack={() => setSelectedId(null)}
+              onToggleStar={toggleStar}
+            />
           ) : (
-            <div className="p-6 max-w-3xl">
-              <div className="flex items-start justify-between gap-3 mb-5">
-                <div>
-                  <h2 className="text-lg font-bold leading-snug" style={{ color: "#1B2419" }}>
-                    {selected.subject || "(no subject)"}
-                  </h2>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {selected.messageCount} {selected.messageCount === 1 ? "message" : "messages"}{" "}
-                    in thread
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() =>
-                      flagMutation.mutate({
-                        threadId: selected.threadId,
-                        flagged: !selected.isFlagged,
-                      })
-                    }
-                    className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                    title={selected.isFlagged ? "Unflag" : "Flag"}
-                  >
-                    <Star
-                      className="w-4 h-4"
-                      style={{ color: selected.isFlagged ? "#86000B" : "#bbb" }}
-                      fill={selected.isFlagged ? "#86000B" : "none"}
-                    />
-                  </button>
-                  <button
-                    onClick={() => setSelectedThreadId(selected.threadId)}
-                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                    title="Refresh thread"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-                </div>
+            <>
+              <div className="pt-2 md:hidden">
+                <MailTabs active={mailbox} counts={counts} onSelect={setMailbox} />
               </div>
-
-              {threadLoading && (
-                <div className="py-8 text-center text-sm" style={{ color: "#86000B" }}>
-                  Loading conversation from Gmail…
-                </div>
-              )}
-              {threadError && !threadLoading && (
-                <div
-                  className="rounded-lg p-4 text-[13px]"
-                  style={{ backgroundColor: "#fff5f5", border: "1px solid #fcc", color: "#c00" }}
-                >
-                  {threadError}
-                </div>
-              )}
-              {!threadLoading && thread.length > 0 && (
-                <div className="space-y-4">
-                  {thread.map((message) => {
-                    const sender = parseSender(message.from);
-                    return (
-                      <div
-                        key={message.id}
-                        className="rounded-lg p-4"
-                        style={{
-                          border: "1px solid #e0d6c8",
-                          backgroundColor: message.direction === "outbound" ? "#ffffff" : "#f9f5ef",
-                        }}
-                      >
-                        <div className="text-[11px] text-gray-500 mb-2 flex justify-between gap-3">
-                          <span
-                            className="font-semibold truncate"
-                            style={{
-                              color: message.direction === "outbound" ? "#86000B" : "#1B2419",
-                            }}
-                          >
-                            {message.direction === "outbound"
-                              ? "Martin Reyes (Rare Global Food)"
-                              : sender.name || sender.email}
-                          </span>
-                          <span className="shrink-0">{formatTs(message.date)}</span>
-                        </div>
-                        <div dangerouslySetInnerHTML={{ __html: message.htmlBody }} />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+              <FilterChips
+                active={chips}
+                onToggle={(k) =>
+                  setChips((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(k)) next.delete(k);
+                    else next.add(k);
+                    return next;
+                  })
+                }
+              />
+              <ThreadList
+                threads={pageThreads}
+                rangeStart={page * PAGE_SIZE}
+                totalLabel={totalLabel}
+                canPrev={page > 0}
+                canNext={canNext}
+                onPrev={() => setPage((p) => Math.max(0, p - 1))}
+                onNext={goNext}
+                loading={
+                  (isLoading && allThreads.length === 0) ||
+                  (isFetching && pageThreads.length === 0 && !!pageToken)
+                }
+                fetching={isFetching}
+                error={listError}
+                onRefresh={() => refetch()}
+                selectedId={pageThreads[cursor]?.threadId ?? null}
+                checked={checked}
+                onToggleCheck={(id) =>
+                  setChecked((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(id)) next.delete(id);
+                    else next.add(id);
+                    return next;
+                  })
+                }
+                onToggleAll={() =>
+                  setChecked((prev) =>
+                    pageThreads.every((t) => prev.has(t.threadId))
+                      ? new Set()
+                      : new Set(pageThreads.map((t) => t.threadId)),
+                  )
+                }
+                onOpen={(t) => setSelectedId(t.threadId)}
+                onStar={toggleStar}
+              />
+            </>
           )}
-        </div>
+        </main>
       </div>
+
+      {!composeOpen && (
+        <div className="md:hidden fixed right-4 bottom-20 z-30">
+          <ComposePill compact onClick={() => setComposeOpen(true)} />
+        </div>
+      )}
+      {composeOpen && <ComposeWindow onClose={() => setComposeOpen(false)} />}
     </div>
   );
 }
