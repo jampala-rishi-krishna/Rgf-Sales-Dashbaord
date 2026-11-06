@@ -52,7 +52,7 @@ export function ActivityFeed({ data, newEvents }: { data: MissionData; newEvents
                       color: "var(--surface,#fff)",
                       borderColor: "transparent",
                     }
-                  : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted,#6B6F68)" }
+                  : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted-foreground,#6B6F68)" }
               }
             >
               {f !== "all" && <ChannelDot channel={f} />}
@@ -100,14 +100,14 @@ export function ActivityFeed({ data, newEvents }: { data: MissionData; newEvents
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline gap-1.5 text-xs">
                       <b style={{ color: "var(--rgf-ink,#1B2419)" }}>{EVENT_LABEL[e.kind]}</b>
-                      <span className="truncate" style={{ color: "var(--muted,#6B6F68)" }}>
+                      <span className="truncate" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
                         {e.company || e.leadName || e.phone || ""}
                       </span>
                     </span>
                     {e.preview && (
                       <span
                         className="block truncate text-[11px]"
-                        style={{ color: "var(--muted,#6B6F68)" }}
+                        style={{ color: "var(--muted-foreground,#6B6F68)" }}
                       >
                         {e.preview}
                       </span>
@@ -117,7 +117,7 @@ export function ActivityFeed({ data, newEvents }: { data: MissionData; newEvents
                     className="shrink-0 font-mono text-[10px]"
                     dateTime={e.ts}
                     title={formatManila(e.ts)}
-                    style={{ color: "var(--muted,#6B6F68)" }}
+                    style={{ color: "var(--muted-foreground,#6B6F68)" }}
                   >
                     {timeAgo(e.ts)}
                   </time>

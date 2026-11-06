@@ -7,7 +7,7 @@ import { EVENT_LABEL, type EventKind, type VapiCallLike } from "@/lib/events";
 import { mmss, useNow, type PodStats, type PodStatus } from "./data";
 
 const STATUS_STYLE: Record<PodStatus, { bg: string; fg: string }> = {
-  Idle: { bg: "rgba(107,111,104,.12)", fg: "var(--muted, #6B6F68)" },
+  Idle: { bg: "rgba(107,111,104,.12)", fg: "var(--muted-foreground, #6B6F68)" },
   Sending: { bg: "rgba(34,109,180,.12)", fg: "#226DB4" },
   Conversing: { bg: "rgba(51,103,59,.14)", fg: "#33673B" },
   "On call": { bg: "rgba(249,115,22,.15)", fg: "#C2410C" },
@@ -144,7 +144,7 @@ export function AgentPod({
         </div>
         <div
           className="shrink-0 text-right font-mono text-[10px] leading-tight tabular-nums"
-          style={{ color: "var(--muted, #6B6F68)" }}
+          style={{ color: "var(--muted-foreground, #6B6F68)" }}
         >
           <div>
             <b className="text-xs" style={{ color: "var(--rgf-ink, #1B2419)" }}>
@@ -171,7 +171,7 @@ export function AgentPod({
           </span>
         </div>
       ) : (
-        <div className="mt-1 truncate text-[11px]" style={{ color: "var(--muted, #6B6F68)" }}>
+        <div className="mt-1 truncate text-[11px]" style={{ color: "var(--muted-foreground, #6B6F68)" }}>
           <Typewriter text={tickerText(stats.latest)} />
         </div>
       )}

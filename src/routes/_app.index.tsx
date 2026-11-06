@@ -30,7 +30,7 @@ function MissionControl() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--rgf-ink,#1B2419)" }}>
             Mission Control
           </h1>
-          <p className="text-sm" style={{ color: "var(--muted,#6B6F68)" }}>
+          <p className="text-sm" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
             Every agent, live. Activity refreshes every 10s, live calls every 5s.
           </p>
         </div>

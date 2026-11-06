@@ -32,7 +32,7 @@ export function ChannelFunnel({ data }: { data: MissionData }) {
               style={
                 ch === k
                   ? { background: CHANNELS[k].color, borderColor: CHANNELS[k].color, color: "#fff" }
-                  : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted,#6B6F68)" }
+                  : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted-foreground,#6B6F68)" }
               }
               title={CHANNELS[k].label}
             >
@@ -50,7 +50,7 @@ export function ChannelFunnel({ data }: { data: MissionData }) {
             <li key={s.label}>
               <div className="mb-0.5 flex items-baseline justify-between text-xs">
                 <span style={{ color: "var(--rgf-ink,#1B2419)" }}>{s.label}</span>
-                <span className="font-mono tabular-nums" style={{ color: "var(--muted,#6B6F68)" }}>
+                <span className="font-mono tabular-nums" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
                   <b style={{ color: "var(--rgf-ink,#1B2419)" }}>{s.value.toLocaleString()}</b>
                   {conv != null && <span className="ml-1.5">{conv.toFixed(0)}%</span>}
                 </span>
@@ -69,7 +69,7 @@ export function ChannelFunnel({ data }: { data: MissionData }) {
         })}
       </ol>
       {ch === "viber" && data.offline.viber && (
-        <p className="mt-3 text-[11px]" style={{ color: "var(--muted,#6B6F68)" }}>
+        <p className="mt-3 text-[11px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
           Viber feed not connected yet.
         </p>
       )}

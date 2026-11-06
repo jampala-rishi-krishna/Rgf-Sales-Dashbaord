@@ -82,12 +82,12 @@ export function ChannelCard({ def, eligible, isAdmin, dryRun, busy, onLaunch }: 
             >
               {def.title}
             </h3>
-            <p className="text-sm text-[var(--muted,#6B6F68)]">{def.agentLine}</p>
+            <p className="text-sm text-[var(--muted-foreground,#6B6F68)]">{def.agentLine}</p>
           </div>
         </header>
 
         <div className="flex items-baseline justify-between rounded-lg bg-[var(--rgf-cream,#FFF8F0)] px-3 py-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-[var(--muted,#6B6F68)]">
+          <span className="text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground,#6B6F68)]">
             Eligible now
           </span>
           <span
@@ -160,7 +160,7 @@ export function ChannelCard({ def, eligible, isAdmin, dryRun, busy, onLaunch }: 
           </p>
         )}
         {def.note && (
-          <p className="flex items-start gap-2 text-xs text-[var(--muted,#6B6F68)]">
+          <p className="flex items-start gap-2 text-xs text-[var(--muted-foreground,#6B6F68)]">
             <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
             {def.note}
             {dryRun ? " — launchable in dry run." : "."}

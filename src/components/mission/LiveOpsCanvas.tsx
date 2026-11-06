@@ -138,7 +138,7 @@ function ScoutNode({ compact }: { compact?: boolean }) {
           </div>
         </div>
       </div>
-      <ul className="mt-2 space-y-0.5 text-[10px]" style={{ color: "var(--muted,#6B6F68)" }}>
+      <ul className="mt-2 space-y-0.5 text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
         <li>Google Maps · Apify</li>
         <li>FireCrawl</li>
         <li>Facebook · LinkedIn</li>
@@ -178,7 +178,7 @@ function CrmNode() {
       >
         {q.isLoading ? "…" : connected ? <AnimatedNumber value={leads.length} /> : "—"}
       </div>
-      <div className="text-[10px]" style={{ color: "var(--muted,#6B6F68)" }}>
+      <div className="text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
         Pre-Leads
       </div>
       {connected ? (
@@ -186,7 +186,7 @@ function CrmNode() {
           +{today} today
         </div>
       ) : (
-        <div className="mt-1 text-[10px]" style={{ color: "var(--muted,#6B6F68)" }}>
+        <div className="mt-1 text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
           CRM not connected
         </div>
       )}
@@ -202,7 +202,7 @@ function OutcomeNode({ label, color, value }: { label: string; color: string; va
     >
       <div
         className="text-[10px] font-semibold uppercase tracking-wide"
-        style={{ color: "var(--muted,#6B6F68)" }}
+        style={{ color: "var(--muted-foreground,#6B6F68)" }}
       >
         {label}
       </div>
@@ -295,7 +295,7 @@ export function LiveOpsCanvas({ data, newEvents }: { data: MissionData; newEvent
         >
           <LiveDot fresh={fresh} /> Live Ops
         </h2>
-        <span className="text-[11px]" style={{ color: "var(--muted,#6B6F68)" }}>
+        <span className="text-[11px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
           Scout → CRM → Agents → Outcomes
         </span>
       </header>

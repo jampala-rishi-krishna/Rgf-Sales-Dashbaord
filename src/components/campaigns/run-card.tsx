@@ -8,7 +8,7 @@ import type { CampaignRun, RunStatus } from "@/hooks/use-campaign-runs";
 const STEPS: RunStatus[] = ["queued", "running", "done"];
 
 const STATUS_META: Record<RunStatus, { label: string; icon: typeof Clock; cls: string }> = {
-  queued: { label: "Queued", icon: Clock, cls: "text-[var(--muted,#6B6F68)]" },
+  queued: { label: "Queued", icon: Clock, cls: "text-[var(--muted-foreground,#6B6F68)]" },
   running: { label: "Running", icon: Loader2, cls: "text-amber-600" },
   done: { label: "Done", icon: CheckCircle2, cls: "text-[var(--rgf-green,#33673B)]" },
   failed: { label: "Failed", icon: XCircle, cls: "text-[var(--rgf-red,#86000B)]" },
@@ -52,7 +52,7 @@ export function RunCard({ run }: { run: CampaignRun }) {
             {run.channel === "voice_batch" ? "Voice batch" : meta.label} · {run.requested} lead
             {run.requested === 1 ? "" : "s"}
           </p>
-          <p className="truncate text-xs text-[var(--muted,#6B6F68)]">
+          <p className="truncate text-xs text-[var(--muted-foreground,#6B6F68)]">
             {formatManila(run.startedAt)}
             {run.triggeredBy ? ` · ${run.triggeredBy}` : ""}
           </p>
@@ -107,12 +107,12 @@ export function RunCard({ run }: { run: CampaignRun }) {
         {(
           [
             ["Sent", run.sent, "text-[var(--rgf-green,#33673B)]"],
-            ["Skipped", run.skipped, "text-[var(--muted,#6B6F68)]"],
+            ["Skipped", run.skipped, "text-[var(--muted-foreground,#6B6F68)]"],
             ["Failed", run.failed, "text-[var(--rgf-red,#86000B)]"],
           ] as const
         ).map(([label, v, cls]) => (
           <div key={label} className="rounded-lg bg-[var(--rgf-cream,#FFF8F0)] py-1.5">
-            <dt className="text-[11px] uppercase tracking-wide text-[var(--muted,#6B6F68)]">
+            <dt className="text-[11px] uppercase tracking-wide text-[var(--muted-foreground,#6B6F68)]">
               {label}
             </dt>
             <dd className={`text-lg font-semibold tabular-nums ${cls}`}>
@@ -122,7 +122,7 @@ export function RunCard({ run }: { run: CampaignRun }) {
         ))}
       </dl>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted,#6B6F68)]">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted-foreground,#6B6F68)]">
         <span>
           {progress}% of requested
           {run.estimated && !run.dryRun ? " · estimated from feed" : ""}

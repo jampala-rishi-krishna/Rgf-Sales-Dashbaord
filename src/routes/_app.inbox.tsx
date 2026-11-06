@@ -103,7 +103,7 @@ function InboxPage() {
         <h1 className="text-2xl font-bold" style={{ color: "var(--rgf-ink,#1B2419)" }}>
           Inbox
         </h1>
-        <p className="text-sm" style={{ color: "var(--muted,#6B6F68)" }}>
+        <p className="text-sm" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
           Every conversation across channels, most recent first.
         </p>
       </div>
@@ -136,7 +136,7 @@ function InboxPage() {
                         color: "var(--rgf-red,#86000B)",
                         boxShadow: "0 1px 2px rgba(0,0,0,.08)",
                       }
-                    : { color: "var(--muted,#6B6F68)" }
+                    : { color: "var(--muted-foreground,#6B6F68)" }
                 }
               >
                 {label}
@@ -157,7 +157,7 @@ function InboxPage() {
                         color: "var(--surface,#fff)",
                         borderColor: "transparent",
                       }
-                    : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted,#6B6F68)" }
+                    : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted-foreground,#6B6F68)" }
                 }
               >
                 {c !== "all" && <ChannelDot channel={c} />}
@@ -233,12 +233,12 @@ function InboxPage() {
                     {r.subtitle && (
                       <div
                         className="truncate font-mono text-[10px]"
-                        style={{ color: "var(--muted,#6B6F68)" }}
+                        style={{ color: "var(--muted-foreground,#6B6F68)" }}
                       >
                         {r.subtitle}
                       </div>
                     )}
-                    <div className="truncate text-xs" style={{ color: "var(--muted,#6B6F68)" }}>
+                    <div className="truncate text-xs" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
                       {r.preview}
                     </div>
                   </div>
@@ -246,7 +246,7 @@ function InboxPage() {
                     className="shrink-0 text-[10px]"
                     dateTime={r.lastAt}
                     title={formatManila(r.lastAt)}
-                    style={{ color: "var(--muted,#6B6F68)" }}
+                    style={{ color: "var(--muted-foreground,#6B6F68)" }}
                   >
                     {timeAgo(r.lastAt)}
                   </time>

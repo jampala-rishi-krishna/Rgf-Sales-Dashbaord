@@ -84,7 +84,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
             <thead>
               <tr
                 className="text-left text-[10px] uppercase tracking-wide"
-                style={{ color: "var(--muted,#6B6F68)" }}
+                style={{ color: "var(--muted-foreground,#6B6F68)" }}
               >
                 <th className="pb-1 font-semibold">Channel</th>
                 <th className="pb-1 text-right font-semibold">Response</th>
@@ -101,7 +101,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
                   <td className="py-1.5">
                     <span className="flex items-center gap-1.5">
                       <ChannelGlyph channel={r.ch} size={12} /> {CHANNELS[r.ch].label}
-                      <span className="text-[10px]" style={{ color: "var(--muted,#6B6F68)" }}>
+                      <span className="text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
                         ({r.total})
                       </span>
                     </span>
@@ -129,7 +129,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
         <div className="lg:col-span-5">
           <div
             className="mb-1 text-[10px] font-semibold uppercase tracking-wide"
-            style={{ color: "var(--muted,#6B6F68)" }}
+            style={{ color: "var(--muted-foreground,#6B6F68)" }}
           >
             Best hours for replies (Manila)
           </div>
@@ -143,7 +143,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
                 <span
                   key={h}
                   className="text-center font-mono text-[8px]"
-                  style={{ color: "var(--muted,#6B6F68)" }}
+                  style={{ color: "var(--muted-foreground,#6B6F68)" }}
                 >
                   {h % 3 === 0 ? h : ""}
                 </span>
@@ -158,7 +158,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
         <div className="lg:col-span-3">
           <div
             className="mb-1 text-[10px] font-semibold uppercase tracking-wide"
-            style={{ color: "var(--muted,#6B6F68)" }}
+            style={{ color: "var(--muted-foreground,#6B6F68)" }}
           >
             Top products (replied leads)
           </div>
@@ -183,7 +183,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
               ))}
             </ul>
           ) : (
-            <p className="text-xs" style={{ color: "var(--muted,#6B6F68)" }}>
+            <p className="text-xs" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
               No product data yet.
             </p>
           )}
@@ -196,7 +196,7 @@ export function ChannelPerformance({ data }: { data: MissionData }) {
 function HeatRow({ label, row, max }: { label: string; row: number[]; max: number }) {
   return (
     <>
-      <span className="text-[9px] leading-[14px]" style={{ color: "var(--muted,#6B6F68)" }}>
+      <span className="text-[9px] leading-[14px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
         {label}
       </span>
       {row.map((v, h) => (

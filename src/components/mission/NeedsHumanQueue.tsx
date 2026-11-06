@@ -25,7 +25,7 @@ export function NeedsHumanQueue({ data, wall }: { data: MissionData; wall?: bool
             {items.length}
           </span>
         </h2>
-        <span className="text-[10px]" style={{ color: "var(--muted,#6B6F68)" }}>
+        <span className="text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
           Longest wait first
         </span>
       </div>
@@ -59,13 +59,13 @@ export function NeedsHumanQueue({ data, wall }: { data: MissionData; wall?: bool
                   >
                     {it.company}
                   </div>
-                  <div className="text-[10px]" style={{ color: "var(--muted,#6B6F68)" }}>
+                  <div className="text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
                     {it.reason}
                   </div>
                 </div>
                 <span
                   className="font-mono text-[11px] tabular-nums"
-                  style={{ color: urgent ? "#86000B" : "var(--muted,#6B6F68)" }}
+                  style={{ color: urgent ? "#86000B" : "var(--muted-foreground,#6B6F68)" }}
                 >
                   {fmtDurationShort(wait)}
                 </span>

@@ -86,7 +86,7 @@ export function ActionCenter() {
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--rgf-ink,#1B2419)]">
             Campaigns
           </h1>
-          <p className="text-sm text-[var(--muted,#6B6F68)]">
+          <p className="text-sm text-[var(--muted-foreground,#6B6F68)]">
             Launch bulk outreach — the dashboard version of the Cliq slash commands.
           </p>
         </div>
