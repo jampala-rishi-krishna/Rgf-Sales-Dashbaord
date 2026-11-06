@@ -23,6 +23,21 @@ export function n8nBase(): string {
   return (process.env.N8N_BASE || process.env.N8N_WEBHOOK_BASE_URL || "").replace(/\/+$/, "");
 }
 
+/**
+ * Human-readable reason for a failed n8n call: the workflow's own { error } / { message },
+ * or a plain explanation when the webhook isn't registered (workflow unpublished).
+ */
+export function n8nErrorMessage(status: number, data: unknown): string {
+  const body = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+  const text = typeof data === "string" ? data : "";
+  const msg = [body.error, body.message, text].find(
+    (v): v is string => typeof v === "string" && v.trim() !== "",
+  );
+  if (status === 404 && (!msg || /not registered|webhook/i.test(msg)))
+    return "This n8n workflow isn't published yet (webhook not found).";
+  return msg ? msg.trim().slice(0, 300) : `n8n responded ${status}`;
+}
+
 /** POST to an n8n webhook. Short-circuits when ACTIONS_DRY_RUN is anything but "false". */
 export async function callN8n<T = unknown>(
   path: string,
@@ -68,13 +83,14 @@ export async function callN8n<T = unknown>(
     } catch {
       /* plain text, e.g. "Workflow got started." */
     }
-    if (!res.ok)
+    const failedInBody = res.ok && (data as { ok?: unknown } | null)?.ok === false;
+    if (!res.ok || failedInBody)
       return {
         ok: false,
-        status: res.status,
+        status: res.ok ? 502 : res.status,
         dryRun: false,
         data: data as T,
-        error: `n8n responded ${res.status}`,
+        error: n8nErrorMessage(res.status, data),
       };
     return { ok: true, status: res.status, dryRun: false, data: data as T };
   } catch (e) {
