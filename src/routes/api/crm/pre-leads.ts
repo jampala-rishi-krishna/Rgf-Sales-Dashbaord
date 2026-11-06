@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { normalizePreLead, type PreLeadsResponse } from "@/lib/crm";
+import { normalizePreLead, type PreLead, type PreLeadsResponse } from "@/lib/crm";
 import { fetchAllPreLeads, n8nConfig, zohoConfigured } from "@/lib/zoho.server";
 
 // Never CDN-cache (s-maxage): Vercel's CDN would serve lead data to requests that
@@ -14,6 +14,15 @@ function json(body: PreLeadsResponse, status = 200, cache = CACHE) {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": cache },
   });
+}
+
+/**
+ * Drops the per-lead raw Zoho record (up to 50 fields) from the list: with ~8k leads
+ * it made the response tens of MB. The Lead 360 drawer loads raw fields per lead
+ * from /api/crm/pre-lead when it opens.
+ */
+function slim(lead: PreLead): PreLead {
+  return { ...lead, raw: {} };
 }
 
 async function viaN8n(): Promise<PreLeadsResponse | null> {
@@ -39,7 +48,10 @@ async function viaN8n(): Promise<PreLeadsResponse | null> {
       connected: true,
       source: "n8n",
       fetchedAt: new Date().toISOString(),
-      leads: rows.map(normalizePreLead).filter((l) => l.id),
+      leads: rows
+        .map(normalizePreLead)
+        .filter((l) => l.id)
+        .map(slim),
     };
   } catch (err) {
     console.warn("[crm/pre-leads] n8n error:", err);
@@ -80,7 +92,7 @@ export const Route = createFileRoute("/api/crm/pre-leads")({
         if (cached) return json(cached);
         if (zohoConfigured()) {
           try {
-            const leads = await fetchAllPreLeads();
+            const leads = (await fetchAllPreLeads()).map(slim);
             return json({
               connected: true,
               source: "zoho",
