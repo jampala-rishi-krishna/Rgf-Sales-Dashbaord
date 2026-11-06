@@ -17,6 +17,8 @@ import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
 import { Route as AppWebsiteRouteImport } from './routes/_app.website'
 import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
+import { Route as ApiAgentHealthRouteImport } from './routes/api/agent-health'
+import { Route as ApiCampaignRunsRouteImport } from './routes/api/campaign-runs'
 import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
@@ -26,6 +28,13 @@ import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
 import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website-chat-sessions'
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
+import { Route as ApiActionsBulkRouteImport } from './routes/api/actions/bulk'
+import { Route as ApiActionsCallRouteImport } from './routes/api/actions/call'
+import { Route as ApiActionsOpenerRouteImport } from './routes/api/actions/opener'
+import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -65,6 +74,16 @@ const AppWhatsappRoute = AppWhatsappRouteImport.update({
   id: '/whatsapp',
   path: '/whatsapp',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiAgentHealthRoute = ApiAgentHealthRouteImport.update({
+  id: '/api/agent-health',
+  path: '/api/agent-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCampaignRunsRoute = ApiCampaignRunsRouteImport.update({
+  id: '/api/campaign-runs',
+  path: '/api/campaign-runs',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGmailFlagRoute = ApiGmailFlagRouteImport.update({
   id: '/api/gmail-flag',
@@ -112,6 +131,41 @@ const ApiWhatsappConversationsRoute =
     path: '/api/whatsapp-conversations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiActionsBulkRoute = ApiActionsBulkRouteImport.update({
+  id: '/api/actions/bulk',
+  path: '/api/actions/bulk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActionsCallRoute = ApiActionsCallRouteImport.update({
+  id: '/api/actions/call',
+  path: '/api/actions/call',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActionsOpenerRoute = ApiActionsOpenerRouteImport.update({
+  id: '/api/actions/opener',
+  path: '/api/actions/opener',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActionsReplyRoute = ApiActionsReplyRouteImport.update({
+  id: '/api/actions/reply',
+  path: '/api/actions/reply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -121,6 +175,8 @@ export interface FileRoutesByFullPath {
   '/sms': typeof AppSmsRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
+  '/api/agent-health': typeof ApiAgentHealthRoute
+  '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
@@ -130,6 +186,13 @@ export interface FileRoutesByFullPath {
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
+  '/api/actions/bulk': typeof ApiActionsBulkRoute
+  '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/opener': typeof ApiActionsOpenerRoute
+  '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -138,6 +201,8 @@ export interface FileRoutesByTo {
   '/sms': typeof AppSmsRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
+  '/api/agent-health': typeof ApiAgentHealthRoute
+  '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
@@ -148,6 +213,13 @@ export interface FileRoutesByTo {
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/': typeof AppIndexRoute
+  '/api/actions/bulk': typeof ApiActionsBulkRoute
+  '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/opener': typeof ApiActionsOpenerRoute
+  '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,6 +230,8 @@ export interface FileRoutesById {
   '/_app/sms': typeof AppSmsRoute
   '/_app/website': typeof AppWebsiteRoute
   '/_app/whatsapp': typeof AppWhatsappRoute
+  '/api/agent-health': typeof ApiAgentHealthRoute
+  '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
@@ -168,6 +242,13 @@ export interface FileRoutesById {
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/_app/': typeof AppIndexRoute
+  '/api/actions/bulk': typeof ApiActionsBulkRoute
+  '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/opener': typeof ApiActionsOpenerRoute
+  '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -179,6 +260,8 @@ export interface FileRouteTypes {
     | '/sms'
     | '/website'
     | '/whatsapp'
+    | '/api/agent-health'
+    | '/api/campaign-runs'
     | '/api/gmail-flag'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
@@ -188,6 +271,13 @@ export interface FileRouteTypes {
     | '/api/vapi-recording'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
+    | '/api/actions/bulk'
+    | '/api/actions/call'
+    | '/api/actions/opener'
+    | '/api/actions/reply'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -196,6 +286,8 @@ export interface FileRouteTypes {
     | '/sms'
     | '/website'
     | '/whatsapp'
+    | '/api/agent-health'
+    | '/api/campaign-runs'
     | '/api/gmail-flag'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
@@ -206,6 +298,13 @@ export interface FileRouteTypes {
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/'
+    | '/api/actions/bulk'
+    | '/api/actions/call'
+    | '/api/actions/opener'
+    | '/api/actions/reply'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
   id:
     | '__root__'
     | '/_app'
@@ -215,6 +314,8 @@ export interface FileRouteTypes {
     | '/_app/sms'
     | '/_app/website'
     | '/_app/whatsapp'
+    | '/api/agent-health'
+    | '/api/campaign-runs'
     | '/api/gmail-flag'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
@@ -225,11 +326,20 @@ export interface FileRouteTypes {
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/_app/'
+    | '/api/actions/bulk'
+    | '/api/actions/call'
+    | '/api/actions/opener'
+    | '/api/actions/reply'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiAgentHealthRoute: typeof ApiAgentHealthRoute
+  ApiCampaignRunsRoute: typeof ApiCampaignRunsRoute
   ApiGmailFlagRoute: typeof ApiGmailFlagRoute
   ApiGmailThreadRoute: typeof ApiGmailThreadRoute
   ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
@@ -239,6 +349,13 @@ export interface RootRouteChildren {
   ApiVapiRecordingRoute: typeof ApiVapiRecordingRoute
   ApiWebsiteChatSessionsRoute: typeof ApiWebsiteChatSessionsRoute
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
+  ApiActionsBulkRoute: typeof ApiActionsBulkRoute
+  ApiActionsCallRoute: typeof ApiActionsCallRoute
+  ApiActionsOpenerRoute: typeof ApiActionsOpenerRoute
+  ApiActionsReplyRoute: typeof ApiActionsReplyRoute
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -298,6 +415,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/whatsapp'
       preLoaderRoute: typeof AppWhatsappRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/api/agent-health': {
+      id: '/api/agent-health'
+      path: '/api/agent-health'
+      fullPath: '/api/agent-health'
+      preLoaderRoute: typeof ApiAgentHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/campaign-runs': {
+      id: '/api/campaign-runs'
+      path: '/api/campaign-runs'
+      fullPath: '/api/campaign-runs'
+      preLoaderRoute: typeof ApiCampaignRunsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/gmail-flag': {
       id: '/api/gmail-flag'
@@ -362,6 +493,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWhatsappConversationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/actions/bulk': {
+      id: '/api/actions/bulk'
+      path: '/api/actions/bulk'
+      fullPath: '/api/actions/bulk'
+      preLoaderRoute: typeof ApiActionsBulkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/actions/call': {
+      id: '/api/actions/call'
+      path: '/api/actions/call'
+      fullPath: '/api/actions/call'
+      preLoaderRoute: typeof ApiActionsCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/actions/opener': {
+      id: '/api/actions/opener'
+      path: '/api/actions/opener'
+      fullPath: '/api/actions/opener'
+      preLoaderRoute: typeof ApiActionsOpenerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/actions/reply': {
+      id: '/api/actions/reply'
+      path: '/api/actions/reply'
+      fullPath: '/api/actions/reply'
+      preLoaderRoute: typeof ApiActionsReplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -388,6 +568,8 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiAgentHealthRoute: ApiAgentHealthRoute,
+  ApiCampaignRunsRoute: ApiCampaignRunsRoute,
   ApiGmailFlagRoute: ApiGmailFlagRoute,
   ApiGmailThreadRoute: ApiGmailThreadRoute,
   ApiGmailThreadsRoute: ApiGmailThreadsRoute,
@@ -397,6 +579,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVapiRecordingRoute: ApiVapiRecordingRoute,
   ApiWebsiteChatSessionsRoute: ApiWebsiteChatSessionsRoute,
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
+  ApiActionsBulkRoute: ApiActionsBulkRoute,
+  ApiActionsCallRoute: ApiActionsCallRoute,
+  ApiActionsOpenerRoute: ApiActionsOpenerRoute,
+  ApiActionsReplyRoute: ApiActionsReplyRoute,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

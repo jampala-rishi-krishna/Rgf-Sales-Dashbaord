@@ -1,14 +1,12 @@
-export const AUTH_KEY = "rgf_isLoggedIn";
-export const LOGIN_EMAIL = import.meta.env.VITE_LOGIN_EMAIL;
-export const LOGIN_PASSWORD = import.meta.env.VITE_LOGIN_PASSWORD;
+// Authentication is server-side now (httpOnly session cookie, see session.server.ts + useMe()).
+// These stubs remain only for legacy imports; they never grant access.
 
+/** @deprecated use useMe() */
 export function isLoggedIn(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(AUTH_KEY) === "true";
+  return false;
 }
 
-export function setLoggedIn(v: boolean) {
-  if (typeof window === "undefined") return;
-  if (v) window.localStorage.setItem(AUTH_KEY, "true");
-  else window.localStorage.removeItem(AUTH_KEY);
+/** @deprecated session is set by POST /api/auth/login and cleared by POST /api/auth/logout */
+export function setLoggedIn(_v: boolean): void {
+  // no-op
 }
