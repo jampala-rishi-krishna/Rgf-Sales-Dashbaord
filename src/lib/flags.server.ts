@@ -11,6 +11,8 @@ export function getFlags() {
     agentEvents: on(process.env.FEATURE_AGENT_EVENTS),
     crm: on(process.env.FEATURE_CRM),
     googleSso: googleSsoEnabled(),
+    leadConversion: on(process.env.FEATURE_LEAD_CONVERSION),
+    leadsTab: on(process.env.FEATURE_LEADS_TAB),
     emailSend: process.env.GMAIL_SEND_ENABLED === "true" || !isDryRun(),
   };
 }

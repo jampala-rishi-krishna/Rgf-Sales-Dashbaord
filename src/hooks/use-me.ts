@@ -14,6 +14,8 @@ export interface MeFlags {
   agentEvents: boolean;
   crm: boolean;
   googleSso: boolean;
+  leadConversion: boolean;
+  leadsTab: boolean;
 }
 export interface MeResponse {
   user: MeUser | null;
@@ -29,6 +31,8 @@ export const DEFAULT_FLAGS: MeFlags = {
   agentEvents: false,
   crm: false,
   googleSso: false,
+  leadConversion: false,
+  leadsTab: false,
 };
 
 export async function fetchMe(): Promise<MeResponse> {

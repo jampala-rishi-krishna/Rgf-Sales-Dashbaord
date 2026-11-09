@@ -76,3 +76,15 @@ If sign-in returns **503** ("Sign-in is temporarily unavailable"), check the dep
 Leave `ACTIONS_DRY_RUN=true` until the click-through is done. When switching it to `false`, test one single-lead send to your own number before any bulk run.
 
 Set `GMAIL_SEND_ENABLED=true` to allow agents and admins to compose, reply, reply all, and forward email from the dashboard while other actions remain in dry run. Viewers cannot send or delete email. The mail delete controls move whole conversations to Gmail Trash and offer Undo; they never permanently delete messages. Gmail requires the `gmail.modify` scope for Trash/Undo and `gmail.send` for sending. Changing this flag requires a redeployment.
+
+## Lead conversion and the Leads tab
+
+Both ship off. Turn each on in Vercel once its n8n webhook is published.
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `FEATURE_LEAD_CONVERSION` | `false` | Enables "Convert to Lead". While off, the buttons show but are disabled with "Backend not connected yet". Calls `POST {N8N_BASE}/dashboard-convert-lead`. Respects `ACTIONS_DRY_RUN`. |
+| `FEATURE_LEADS_TAB` | `false` | Shows the Leads tab. Reads `GET {N8N_BASE}/dashboard-leads`. |
+| `ZOHO_LEAD_OWNERS` | empty | Optional JSON list of Zoho owners for the Convert dialog: `[{"id":"...","name":"...","email":"...","default":true}]`. A user whose email matches is pre-selected; otherwise the `default` owner (Sales Director). |
+
+Both webhooks use the same `N8N_WEBHOOK_AUTH` header as the other actions.
