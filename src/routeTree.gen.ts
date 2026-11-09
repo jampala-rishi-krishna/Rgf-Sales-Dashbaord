@@ -39,6 +39,7 @@ import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whats
 import { Route as ApiActionsBulkRouteImport } from './routes/api/actions/bulk'
 import { Route as ApiActionsCallRouteImport } from './routes/api/actions/call'
 import { Route as ApiActionsConvertLeadRouteImport } from './routes/api/actions/convert-lead'
+import { Route as ApiActionsFollowupRouteImport } from './routes/api/actions/followup'
 import { Route as ApiActionsOpenerRouteImport } from './routes/api/actions/opener'
 import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
 import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
@@ -201,6 +202,11 @@ const ApiActionsConvertLeadRoute = ApiActionsConvertLeadRouteImport.update({
   path: '/api/actions/convert-lead',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiActionsFollowupRoute = ApiActionsFollowupRouteImport.update({
+  id: '/api/actions/followup',
+  path: '/api/actions/followup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiActionsOpenerRoute = ApiActionsOpenerRouteImport.update({
   id: '/api/actions/opener',
   path: '/api/actions/opener',
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/api/actions/bulk': typeof ApiActionsBulkRoute
   '/api/actions/call': typeof ApiActionsCallRoute
   '/api/actions/convert-lead': typeof ApiActionsConvertLeadRoute
+  '/api/actions/followup': typeof ApiActionsFollowupRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
@@ -329,6 +336,7 @@ export interface FileRoutesByTo {
   '/api/actions/bulk': typeof ApiActionsBulkRoute
   '/api/actions/call': typeof ApiActionsCallRoute
   '/api/actions/convert-lead': typeof ApiActionsConvertLeadRoute
+  '/api/actions/followup': typeof ApiActionsFollowupRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
@@ -373,6 +381,7 @@ export interface FileRoutesById {
   '/api/actions/bulk': typeof ApiActionsBulkRoute
   '/api/actions/call': typeof ApiActionsCallRoute
   '/api/actions/convert-lead': typeof ApiActionsConvertLeadRoute
+  '/api/actions/followup': typeof ApiActionsFollowupRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
@@ -417,6 +426,7 @@ export interface FileRouteTypes {
     | '/api/actions/bulk'
     | '/api/actions/call'
     | '/api/actions/convert-lead'
+    | '/api/actions/followup'
     | '/api/actions/opener'
     | '/api/actions/reply'
     | '/api/auth/google'
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/api/actions/bulk'
     | '/api/actions/call'
     | '/api/actions/convert-lead'
+    | '/api/actions/followup'
     | '/api/actions/opener'
     | '/api/actions/reply'
     | '/api/auth/google'
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
     | '/api/actions/bulk'
     | '/api/actions/call'
     | '/api/actions/convert-lead'
+    | '/api/actions/followup'
     | '/api/actions/opener'
     | '/api/actions/reply'
     | '/api/auth/google'
@@ -536,6 +548,7 @@ export interface RootRouteChildren {
   ApiActionsBulkRoute: typeof ApiActionsBulkRoute
   ApiActionsCallRoute: typeof ApiActionsCallRoute
   ApiActionsConvertLeadRoute: typeof ApiActionsConvertLeadRoute
+  ApiActionsFollowupRoute: typeof ApiActionsFollowupRoute
   ApiActionsOpenerRoute: typeof ApiActionsOpenerRoute
   ApiActionsReplyRoute: typeof ApiActionsReplyRoute
   ApiAuthGoogleRoute: typeof ApiAuthGoogleRouteWithChildren
@@ -760,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiActionsConvertLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/actions/followup': {
+      id: '/api/actions/followup'
+      path: '/api/actions/followup'
+      fullPath: '/api/actions/followup'
+      preLoaderRoute: typeof ApiActionsFollowupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/actions/opener': {
       id: '/api/actions/opener'
       path: '/api/actions/opener'
@@ -901,6 +921,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiActionsBulkRoute: ApiActionsBulkRoute,
   ApiActionsCallRoute: ApiActionsCallRoute,
   ApiActionsConvertLeadRoute: ApiActionsConvertLeadRoute,
+  ApiActionsFollowupRoute: ApiActionsFollowupRoute,
   ApiActionsOpenerRoute: ApiActionsOpenerRoute,
   ApiActionsReplyRoute: ApiActionsReplyRoute,
   ApiAuthGoogleRoute: ApiAuthGoogleRouteWithChildren,

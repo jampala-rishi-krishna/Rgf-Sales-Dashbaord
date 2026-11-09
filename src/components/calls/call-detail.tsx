@@ -9,7 +9,8 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
-import { SiWhatsapp } from "react-icons/si";
+import { SiViber, SiWhatsapp } from "react-icons/si";
+import { toast } from "sonner";
 import { AgentAvatar, DisabledReason } from "@/components/shared";
 import { useMe } from "@/hooks/use-me";
 import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
@@ -263,12 +264,19 @@ function Transcript({
   );
 }
 
+type FollowupChannel = "sms" | "whatsapp" | "viber";
+const FOLLOWUP: Record<FollowupChannel, { label: string; icon: ReactNode }> = {
+  sms: { label: "SMS", icon: <MessageSquare className="size-4" /> },
+  whatsapp: { label: "WhatsApp", icon: <SiWhatsapp className="size-4" /> },
+  viber: { label: "Viber", icon: <SiViber className="size-4" /> },
+};
+
 function CallActions({ call }: { call: VapiCall }) {
   const { data: me } = useMe();
   const singleCall = !!me?.flags?.singleCall;
   const lead = callLead(call);
   const [busy, setBusy] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState<"sms" | "whatsapp" | null>(null);
+  const [confirm, setConfirm] = useState<FollowupChannel | null>(null);
 
   useEffect(() => {
     if (!confirm) return;
@@ -276,30 +284,45 @@ function CallActions({ call }: { call: VapiCall }) {
     return () => clearTimeout(t);
   }, [confirm]);
 
-  const payload = {
-    leadId: lead.leadId ?? "",
-    leadName: lead.leadName ?? "",
-    companyName: lead.companyName ?? "",
-    phone: lead.phone ?? "",
-    product: lead.product ?? "",
-    channel: "Voice",
-  };
-
   async function callLeadNow() {
     setBusy("call");
-    await postAction("/api/actions/call", payload, "Mara is calling this lead");
+    await postAction(
+      "/api/actions/call",
+      {
+        leadId: lead.leadId ?? "",
+        leadName: lead.leadName ?? "",
+        companyName: lead.companyName ?? "",
+        phone: lead.phone ?? "",
+        product: lead.product ?? "",
+        channel: "Voice",
+      },
+      "Mara is calling this lead",
+    );
     setBusy(null);
   }
 
-  async function sendOpener(channel: "sms" | "whatsapp") {
+  async function sendFollowup(channel: FollowupChannel) {
     if (confirm !== channel) return setConfirm(channel);
     setConfirm(null);
     setBusy(channel);
-    await postAction(
-      "/api/actions/opener",
-      { channel, lead: payload },
-      channel === "sms" ? "Follow-up SMS sent" : "Follow-up WhatsApp sent",
+    const label = FOLLOWUP[channel].label;
+    const r = await postAction<{ result?: string }>(
+      "/api/actions/followup",
+      {
+        channel,
+        phone: lead.phone ?? "",
+        leadId: lead.leadId ?? "",
+        leadName: lead.leadName ?? "",
+        companyName: lead.companyName ?? "",
+        product: lead.product ?? "",
+        callId: call.id,
+        callOutcome: callOutcome(call),
+        callAt: call.createdAt ?? "",
+      },
+      `${label} follow-up sent`,
     );
+    if (r.ok && r.data?.result === "opener")
+      toast.info(`No ${label} conversation yet, so Martin's ${label} opener was sent instead.`);
     setBusy(null);
   }
 
@@ -308,7 +331,7 @@ function CallActions({ call }: { call: VapiCall }) {
     "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none";
 
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 [&>*]:w-full [&_button]:w-full [&_button]:justify-center">
+    <div className="space-y-2">
       <DisabledReason
         disabled={!singleCall || noPhone}
         reason={
@@ -319,43 +342,33 @@ function CallActions({ call }: { call: VapiCall }) {
       >
         <button
           type="button"
-          className={`${btn} bg-[var(--ch-accept)] text-white enabled:hover:brightness-110`}
+          className={`${btn} w-full justify-center bg-[var(--ch-accept)] text-white enabled:hover:brightness-110 sm:w-auto`}
           disabled={!singleCall || noPhone || busy !== null}
           onClick={callLeadNow}
         >
           <Phone className="size-4" /> {busy === "call" ? "Calling…" : "Call this lead"}
         </button>
       </DisabledReason>
-      <DisabledReason disabled={noPhone} reason="No phone number on this call">
-        <button
-          type="button"
-          className={`${btn} bg-white/10 text-[var(--ch-text)] enabled:hover:bg-white/15`}
-          disabled={noPhone || busy !== null}
-          onClick={() => sendOpener("sms")}
-        >
-          <MessageSquare className="size-4" />{" "}
-          {busy === "sms"
-            ? "Sending…"
-            : confirm === "sms"
-              ? "Click again to send SMS"
-              : "Send follow-up SMS"}
-        </button>
-      </DisabledReason>
-      <DisabledReason disabled={noPhone} reason="No phone number on this call">
-        <button
-          type="button"
-          className={`${btn} bg-white/10 text-[var(--ch-text)] enabled:hover:bg-white/15`}
-          disabled={noPhone || busy !== null}
-          onClick={() => sendOpener("whatsapp")}
-        >
-          <SiWhatsapp className="size-4" />{" "}
-          {busy === "whatsapp"
-            ? "Sending…"
-            : confirm === "whatsapp"
-              ? "Click again to send WhatsApp"
-              : "Send follow-up WhatsApp"}
-        </button>
-      </DisabledReason>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 [&>*]:w-full [&_button]:w-full [&_button]:justify-center">
+        {(Object.keys(FOLLOWUP) as FollowupChannel[]).map((ch) => (
+          <DisabledReason key={ch} disabled={noPhone} reason="No phone number on this call">
+            <button
+              type="button"
+              className={`${btn} ${confirm === ch ? "bg-[var(--ch)] text-white" : "bg-white/10 text-[var(--ch-text)] enabled:hover:bg-white/15"}`}
+              disabled={noPhone || busy !== null}
+              onClick={() => sendFollowup(ch)}
+              title={`Send a ${FOLLOWUP[ch].label} follow-up about this call (posted to RGF Scout)`}
+            >
+              {FOLLOWUP[ch].icon}{" "}
+              {busy === ch
+                ? "Sending…"
+                : confirm === ch
+                  ? `Click again to send ${FOLLOWUP[ch].label}`
+                  : `${FOLLOWUP[ch].label} follow-up`}
+            </button>
+          </DisabledReason>
+        ))}
+      </div>
     </div>
   );
 }
