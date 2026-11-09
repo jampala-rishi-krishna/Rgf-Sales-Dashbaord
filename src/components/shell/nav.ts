@@ -1,4 +1,4 @@
-import { Home, Inbox, Megaphone, type LucideIcon } from "lucide-react";
+import { Home, Inbox, Megaphone, Users, type LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { hasReplied, type ChannelKey, type Conversation } from "@/lib/channels";
 import { useSmsFeed, useViberFeed, useWhatsAppFeed } from "@/hooks/use-feeds";
@@ -10,6 +10,8 @@ export type NavItem = {
   channel?: ChannelKey;
   countKey?: CountKey;
   action?: boolean;
+  /** Only shown when this /api/auth/me flag is on. */
+  flag?: "leadsTab";
 };
 export type CountKey = "inbox" | "whatsapp" | "sms" | "viber";
 
@@ -22,6 +24,7 @@ export const NAV: NavItem[] = [
   { to: "/email", label: "Email", channel: "email" },
   { to: "/calls", label: "Calls", channel: "voice" },
   { to: "/website", label: "Website", channel: "web" },
+  { to: "/leads", label: "Leads", icon: Users, flag: "leadsTab" },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone, action: true },
 ];
 
@@ -84,4 +87,11 @@ export function useShellFeeds() {
     viber: viber.data?.items,
     viberConnected: viber.data?.connected ?? false,
   };
+}
+
+/** Drops nav items whose feature flag is off. */
+export function visibleNav(
+  flags: Partial<Record<NonNullable<NavItem["flag"]>, boolean>> | undefined,
+) {
+  return NAV.filter((n) => !n.flag || !!flags?.[n.flag]);
 }

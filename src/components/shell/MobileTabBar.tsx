@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ChannelGlyph } from "@/components/shared";
 import { cn } from "@/lib/utils";
-import { NAV, isActive, type CountKey } from "./nav";
+import { useMe } from "@/hooks/use-me";
+import { isActive, visibleNav, type CountKey } from "./nav";
 
 const TABS = [
   { to: "/", label: "Home", icon: Home },
@@ -24,7 +25,9 @@ export function MobileTabBar({
   const [more, setMore] = useState(false);
   const tabs = wall ? TABS.filter((t) => !t.action) : TABS;
   const primary = new Set(TABS.map((t) => t.to));
-  const rest = NAV.filter((n) => !primary.has(n.to) && !(wall && n.action));
+  const rest = visibleNav(useMe().data?.flags).filter(
+    (n) => !primary.has(n.to) && !(wall && n.action),
+  );
   const moreActive = rest.some((n) => isActive(pathname, n.to));
 
   const cls = (active: boolean) =>
