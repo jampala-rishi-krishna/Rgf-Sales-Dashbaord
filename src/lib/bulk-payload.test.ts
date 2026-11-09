@@ -45,6 +45,23 @@ describe("bulk payload shapes", () => {
     ).toBe(false);
     expect(BulkRequestSchema.safeParse({ channel: "email", limit: 5 }).success).toBe(false);
   });
+  it("voice sends { limit, sortOrder, skipContacted } to the voice campaign", () => {
+    const req = BulkRequestSchema.parse({ channel: "voice_batch", limit: 5 });
+    expect(buildBulkPayload(req)).toEqual({
+      path: "/dashboard-voice-campaign",
+      body: { limit: 5, sortOrder: "desc", skipContacted: true },
+      count: 5,
+    });
+    const r2 = BulkRequestSchema.parse({
+      channel: "voice_batch",
+      limit: 2,
+      sortOrder: "asc",
+      skipContacted: false,
+    });
+    expect(buildBulkPayload(r2).body).toEqual({ limit: 2, sortOrder: "asc", skipContacted: false });
+    expect(BulkRequestSchema.safeParse({ channel: "voice_batch", limit: 51 }).success).toBe(false);
+    expect(BulkRequestSchema.safeParse({ channel: "voice_batch" }).success).toBe(false);
+  });
   it("sms and viber send { limit } only", () => {
     for (const channel of ["sms", "viber"] as const) {
       const req = BulkRequestSchema.parse({ channel, limit: 7, runId: "r1" });

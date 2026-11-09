@@ -7,36 +7,37 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ChannelGlyph, ConfirmSendDialog, DisabledReason } from "@/components/shared";
 import { CHANNELS } from "@/lib/channels";
 import type { PreLead } from "@/lib/crm";
-import {
-  DEFAULT_LIMIT,
-  MAX_LIMIT,
-  VOICE_BATCH_SIZE,
-  type CampaignDef,
-  type SortOrder,
-} from "./campaign-config";
+import { DEFAULT_LIMIT, MAX_LIMIT, type CampaignDef, type SortOrder } from "./campaign-config";
 
 export interface ChannelCardProps {
   def: CampaignDef;
   /** Eligible leads sorted oldest-first; null when CRM not connected. */
   eligible: PreLead[] | null;
+  /** Same, but including leads already contacted on this channel (for the skip toggle). */
+  eligibleAll?: PreLead[] | null;
   /** Pre-Leads skipped because they are already converted to Zoho Leads. */
   convertedExcluded?: number;
   isAdmin: boolean;
   dryRun: boolean;
   busy: boolean;
-  onLaunch: (args: { limit: number; sortOrder?: SortOrder }) => Promise<void>;
+  onLaunch: (args: {
+    limit: number;
+    sortOrder?: SortOrder;
+    skipContacted?: boolean;
+  }) => Promise<void>;
 }
 
-function parseLimit(raw: string): number | null {
+function parseLimit(raw: string, max: number): number | null {
   if (!raw.trim()) return null;
   const n = Number(raw);
-  if (!Number.isInteger(n) || n < 1 || n > MAX_LIMIT) return null;
+  if (!Number.isInteger(n) || n < 1 || n > max) return null;
   return n;
 }
 
 export function ChannelCard({
   def,
-  eligible,
+  eligible: eligibleProp,
+  eligibleAll,
   convertedExcluded = 0,
   isAdmin,
   dryRun,
@@ -48,12 +49,15 @@ export function ChannelCard({
   const [sort, setSort] = useState<SortOrder>("asc");
   const [open, setOpen] = useState(false);
 
-  const limit = def.hasCount ? parseLimit(raw) : VOICE_BATCH_SIZE;
+  const [skipContacted, setSkipContacted] = useState(true);
+  const max = def.maxLimit ?? MAX_LIMIT;
+  const eligible =
+    def.hasSkipContacted && !skipContacted ? (eligibleAll ?? eligibleProp) : eligibleProp;
+  const limit = def.hasCount ? parseLimit(raw, max) : 1;
   const blankOrZero = def.hasCount && (!raw.trim() || Number(raw) === 0);
   const outOfRange = def.hasCount && !blankOrZero && limit === null;
 
-  // Voice batch always targets the newest leads (n8n picks them).
-  const effectiveSort: SortOrder = def.key === "voice_batch" ? "desc" : def.hasSort ? sort : "asc";
+  const effectiveSort: SortOrder = def.hasSort ? sort : "asc";
   const ordered = eligible ? (effectiveSort === "desc" ? [...eligible].reverse() : eligible) : null;
   const sample = (ordered ?? [])
     .slice(0, Math.min(5, limit ?? 5))
@@ -66,7 +70,7 @@ export function ChannelCard({
     : limit == null
       ? blankOrZero
         ? "Enter a number of leads (0/blank is blocked)"
-        : `Enter a whole number between 1 and ${MAX_LIMIT}`
+        : `Enter a whole number between 1 and ${max}`
       : eligible && eligible.length === 0
         ? "No eligible leads"
         : undefined;
@@ -122,7 +126,7 @@ export function ChannelCard({
               type="number"
               inputMode="numeric"
               min={1}
-              max={MAX_LIMIT}
+              max={max}
               step={1}
               value={raw}
               disabled={!isAdmin}
@@ -131,14 +135,10 @@ export function ChannelCard({
               onChange={(e) => setRaw(e.target.value)}
             />
             {blankOrZero && (
-              <p className="text-xs text-destructive">
-                0 or blank is blocked. Enter 1–{MAX_LIMIT}.
-              </p>
+              <p className="text-xs text-destructive">0 or blank is blocked. Enter 1–{max}.</p>
             )}
             {outOfRange && (
-              <p className="text-xs text-destructive">
-                Must be a whole number from 1 to {MAX_LIMIT}.
-              </p>
+              <p className="text-xs text-destructive">Must be a whole number from 1 to {max}.</p>
             )}
           </div>
         ) : (
@@ -166,6 +166,26 @@ export function ChannelCard({
               <ToggleGroupItem value="desc">Newest first</ToggleGroupItem>
             </ToggleGroup>
           </div>
+        )}
+
+        {def.hasSkipContacted && (
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm">
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 accent-[var(--rgf-red,#86000B)]"
+              checked={skipContacted}
+              disabled={!isAdmin}
+              onChange={(e) => setSkipContacted(e.target.checked)}
+            />
+            <span>
+              <span className="font-medium">Only leads not yet called</span>
+              <span className="block text-xs text-[var(--muted-foreground,#6B6F68)]">
+                {skipContacted
+                  ? "Skips every number Mara has already called."
+                  : "Includes leads that were already called."}
+              </span>
+            </span>
+          </label>
         )}
 
         {def.warning && (
@@ -207,7 +227,11 @@ export function ChannelCard({
         onConfirm={async () => {
           if (limit == null || limit < 1) return; // hard block 0/blank
           setOpen(false);
-          await onLaunch({ limit, sortOrder: def.hasSort ? sort : undefined });
+          await onLaunch({
+            limit,
+            sortOrder: def.hasSort ? sort : undefined,
+            skipContacted: def.hasSkipContacted ? skipContacted : undefined,
+          });
         }}
       />
     </article>

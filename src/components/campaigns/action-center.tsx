@@ -10,7 +10,7 @@ import { useCampaignRuns, type CampaignChannel } from "@/hooks/use-campaign-runs
 import { useConversions } from "@/hooks/use-conversions";
 import { postAction } from "@/lib/action-client";
 import type { PreLead } from "@/lib/crm";
-import { CAMPAIGNS, VOICE_BATCH_SIZE, type CampaignDef, type SortOrder } from "./campaign-config";
+import { CAMPAIGNS, type CampaignDef, type SortOrder } from "./campaign-config";
 import { ChannelCard } from "./channel-card";
 import { RunCard } from "./run-card";
 
@@ -19,17 +19,18 @@ function eligibleFor(
   leads: PreLead[],
   index: OutreachIndex | undefined,
   isConverted: (l: PreLead) => boolean = () => false,
+  includeContacted = false,
 ): PreLead[] {
   const out = leads.filter((l) => {
     if (def.needs === "email" ? !l.email : !l.phone) return false;
     // Already a Zoho Lead: never send another bulk opener.
     if (isConverted(l)) return false;
-    if (!index) return true;
+    if (!index || includeContacted) return true;
     return !lookupOutreach(index, l)[def.outreachKey]?.contacted;
   });
   // Oldest first; cards reverse for "desc" (Newest first).
   out.sort((a, b) => Date.parse(a.createdTime) - Date.parse(b.createdTime));
-  return def.key === "voice_batch" ? out.slice(-VOICE_BATCH_SIZE) : out;
+  return out;
 }
 
 export function ActionCenter() {
@@ -59,6 +60,19 @@ export function ActionCenter() {
       );
     return m;
   }, [connected, leads, index, outreachLoading, isConverted]);
+  // Same lists including already-contacted leads (cards with the skip toggle).
+  const eligibleAllByChannel = useMemo(() => {
+    const m = new Map<CampaignChannel, PreLead[] | null>();
+    for (const def of CAMPAIGNS)
+      if (def.hasSkipContacted)
+        m.set(
+          def.key,
+          connected && leads && !outreachLoading
+            ? eligibleFor(def, leads, index, isConverted, true)
+            : null,
+        );
+    return m;
+  }, [connected, leads, index, outreachLoading, isConverted]);
   // How many would have been eligible but are already converted (per channel).
   const convertedByChannel = useMemo(() => {
     const m = new Map<CampaignChannel, number>();
@@ -71,7 +85,12 @@ export function ActionCenter() {
     return m;
   }, [connected, leads, index, outreachLoading, eligibleByChannel]);
 
-  async function launch(def: CampaignDef, limit: number, sortOrder?: SortOrder) {
+  async function launch(
+    def: CampaignDef,
+    limit: number,
+    sortOrder?: SortOrder,
+    skipContacted?: boolean,
+  ) {
     if (!Number.isInteger(limit) || limit < 1) return; // never send 0/blank
     setBusy(def.key);
     const runId = crypto.randomUUID();
@@ -79,8 +98,10 @@ export function ActionCenter() {
     try {
       const res = await postAction(
         "/api/actions/bulk",
-        { channel: def.key, limit, sortOrder, runId },
-        def.key === "voice_batch" ? "Voice batch started" : `${def.title} started`,
+        { channel: def.key, limit, sortOrder, skipContacted, runId },
+        def.key === "voice_batch"
+          ? `Voice calls started: Mara is calling ${limit} lead${limit === 1 ? "" : "s"}`
+          : `${def.title} started`,
       );
       if (res.ok) {
         addRun({
@@ -135,11 +156,14 @@ export function ActionCenter() {
             key={def.key}
             def={def}
             eligible={eligibleByChannel.get(def.key) ?? null}
+            eligibleAll={eligibleAllByChannel.get(def.key) ?? null}
             convertedExcluded={convertedByChannel.get(def.key) ?? 0}
             isAdmin={isAdmin}
             dryRun={dryRun}
             busy={busy === def.key}
-            onLaunch={({ limit, sortOrder }) => launch(def, limit, sortOrder)}
+            onLaunch={({ limit, sortOrder, skipContacted }) =>
+              launch(def, limit, sortOrder, skipContacted)
+            }
           />
         ))}
       </section>

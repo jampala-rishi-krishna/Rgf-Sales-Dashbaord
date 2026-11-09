@@ -20,7 +20,10 @@ export const Route = createFileRoute("/api/actions/bulk")({
             400,
           );
         const { path, body, count } = buildBulkPayload(parsed.data);
-        const r = await callN8n(path, body, {
+        // Voice campaign reports who started it in its RGF Scout summary.
+        const sent =
+          parsed.data.channel === "voice_batch" ? { ...body, triggeredBy: user.email } : body;
+        const r = await callN8n(path, sent, {
           user,
           action: "bulk",
           channel: parsed.data.channel,

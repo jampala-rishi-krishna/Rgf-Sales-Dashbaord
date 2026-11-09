@@ -17,6 +17,10 @@ export interface CampaignDef {
   needs: "phone" | "email";
   note?: string;
   warning?: string;
+  /** Max leads per launch (defaults to MAX_LIMIT). */
+  maxLimit?: number;
+  /** Shows the "Only leads not yet called" checkbox. */
+  hasSkipContacted?: boolean;
 }
 
 export const CAMPAIGNS: CampaignDef[] = [
@@ -66,10 +70,12 @@ export const CAMPAIGNS: CampaignDef[] = [
     key: "voice_batch",
     channel: "voice",
     outreachKey: "call",
-    title: "Voice batch",
-    agentLine: "Calls the 3 newest Pre-Leads",
-    hasCount: false,
-    hasSort: false,
+    title: "Voice calls",
+    agentLine: "Mara calls Pre-Leads one by one",
+    hasCount: true,
+    hasSort: true,
+    hasSkipContacted: true,
+    maxLimit: 50,
     needs: "phone",
   },
 ];
