@@ -39,11 +39,13 @@ import { Route as ApiActionsBulkRouteImport } from './routes/api/actions/bulk'
 import { Route as ApiActionsCallRouteImport } from './routes/api/actions/call'
 import { Route as ApiActionsOpenerRouteImport } from './routes/api/actions/opener'
 import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
+import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 import { Route as ApiCrmPreLeadsRouteImport } from './routes/api/crm/pre-leads'
 import { Route as ApiCrmPreLeadsCountRouteImport } from './routes/api/crm/pre-leads-count'
+import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -195,6 +197,11 @@ const ApiActionsReplyRoute = ApiActionsReplyRouteImport.update({
   path: '/api/actions/reply',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthGoogleRoute = ApiAuthGoogleRouteImport.update({
+  id: '/api/auth/google',
+  path: '/api/auth/google',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
   id: '/api/auth/login',
   path: '/api/auth/login',
@@ -219,6 +226,11 @@ const ApiCrmPreLeadsCountRoute = ApiCrmPreLeadsCountRouteImport.update({
   id: '/api/crm/pre-leads-count',
   path: '/api/crm/pre-leads-count',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthGoogleCallbackRoute = ApiAuthGoogleCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => ApiAuthGoogleRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -251,11 +263,13 @@ export interface FileRoutesByFullPath {
   '/api/actions/call': typeof ApiActionsCallRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -287,11 +301,13 @@ export interface FileRoutesByTo {
   '/api/actions/call': typeof ApiActionsCallRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -325,11 +341,13 @@ export interface FileRoutesById {
   '/api/actions/call': typeof ApiActionsCallRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -363,11 +381,13 @@ export interface FileRouteTypes {
     | '/api/actions/call'
     | '/api/actions/opener'
     | '/api/actions/reply'
+    | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
+    | '/api/auth/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -399,11 +419,13 @@ export interface FileRouteTypes {
     | '/api/actions/call'
     | '/api/actions/opener'
     | '/api/actions/reply'
+    | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
+    | '/api/auth/google/callback'
   id:
     | '__root__'
     | '/_app'
@@ -436,11 +458,13 @@ export interface FileRouteTypes {
     | '/api/actions/call'
     | '/api/actions/opener'
     | '/api/actions/reply'
+    | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
+    | '/api/auth/google/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -465,6 +489,7 @@ export interface RootRouteChildren {
   ApiActionsCallRoute: typeof ApiActionsCallRoute
   ApiActionsOpenerRoute: typeof ApiActionsOpenerRoute
   ApiActionsReplyRoute: typeof ApiActionsReplyRoute
+  ApiAuthGoogleRoute: typeof ApiAuthGoogleRouteWithChildren
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
@@ -684,6 +709,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiActionsReplyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/google': {
+      id: '/api/auth/google'
+      path: '/api/auth/google'
+      fullPath: '/api/auth/google'
+      preLoaderRoute: typeof ApiAuthGoogleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/login': {
       id: '/api/auth/login'
       path: '/api/auth/login'
@@ -719,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCrmPreLeadsCountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/google/callback': {
+      id: '/api/auth/google/callback'
+      path: '/callback'
+      fullPath: '/api/auth/google/callback'
+      preLoaderRoute: typeof ApiAuthGoogleCallbackRouteImport
+      parentRoute: typeof ApiAuthGoogleRoute
+    }
   }
 }
 
@@ -748,6 +787,18 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface ApiAuthGoogleRouteChildren {
+  ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
+}
+
+const ApiAuthGoogleRouteChildren: ApiAuthGoogleRouteChildren = {
+  ApiAuthGoogleCallbackRoute: ApiAuthGoogleCallbackRoute,
+}
+
+const ApiAuthGoogleRouteWithChildren = ApiAuthGoogleRoute._addFileChildren(
+  ApiAuthGoogleRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
@@ -770,6 +821,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiActionsCallRoute: ApiActionsCallRoute,
   ApiActionsOpenerRoute: ApiActionsOpenerRoute,
   ApiActionsReplyRoute: ApiActionsReplyRoute,
+  ApiAuthGoogleRoute: ApiAuthGoogleRouteWithChildren,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,

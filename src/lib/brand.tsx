@@ -1,6 +1,7 @@
 export function Logo({ className = "" }: { className?: string }) {
   return (
     <div
+      aria-label="Rare Global Food"
       className={`leading-none select-none text-[var(--rgf-red)] dark:text-[#E8505E] ${className}`}
     >
       <div className="text-2xl font-black tracking-tight">RARE</div>

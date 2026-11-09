@@ -72,14 +72,14 @@ function AppLayout() {
   }, []);
 
   // ── Logout ───────────────────────────────────────────────────────────────
-  const doLogout = useCallback(async () => {
+  const doLogout = useCallback(async (reason?: "idle") => {
     try {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     } catch {
       /* still leave the app */
     }
     queryClient.clear();
-    void navigate({ to: "/login", replace: true });
+    void navigate({ to: "/login", search: reason ? { reason } : {}, replace: true });
   }, [navigate, queryClient]);
 
   // ── Inactivity logout (disabled on Live Wall) ────────────────────────────
@@ -88,7 +88,7 @@ function AppLayout() {
     if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
     setShowWarning(false);
     warnTimerRef.current = setTimeout(() => setShowWarning(true), INACTIVITY_MS - WARN_BEFORE_MS);
-    logoutTimerRef.current = setTimeout(() => void doLogout(), INACTIVITY_MS);
+    logoutTimerRef.current = setTimeout(() => void doLogout("idle"), INACTIVITY_MS);
   }, [doLogout]);
 
   useEffect(() => {

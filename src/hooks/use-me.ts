@@ -13,6 +13,7 @@ export interface MeFlags {
   campaignRuns: boolean;
   agentEvents: boolean;
   crm: boolean;
+  googleSso: boolean;
 }
 export interface MeResponse {
   user: MeUser | null;
@@ -27,6 +28,7 @@ export const DEFAULT_FLAGS: MeFlags = {
   campaignRuns: false,
   agentEvents: false,
   crm: false,
+  googleSso: false,
 };
 
 export async function fetchMe(): Promise<MeResponse> {
@@ -34,7 +36,11 @@ export async function fetchMe(): Promise<MeResponse> {
     credentials: "include",
     headers: { Accept: "application/json" },
   });
-  if (r.status === 401) return { user: null, flags: DEFAULT_FLAGS, dryRun: true };
+  if (r.status === 401) {
+    // Signed out: still read the public flags (e.g. googleSso for the login page).
+    const j = (await r.json().catch(() => ({}))) as Partial<MeResponse>;
+    return { user: null, flags: { ...DEFAULT_FLAGS, ...(j.flags ?? {}) }, dryRun: true };
+  }
   if (!r.ok) throw new Error(`GET /api/auth/me failed (${r.status})`);
   const j = (await r.json()) as Partial<MeResponse>;
   return {

@@ -18,7 +18,12 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 /** Paths under /api that are reachable without a session. */
-const PUBLIC_API = new Set(["/api/auth/login"]);
+const PUBLIC_API = new Set([
+  "/api/auth/login",
+  "/api/auth/me", // handler checks the session itself; signed-out reply carries only public flags
+  "/api/auth/google",
+  "/api/auth/google/callback",
+]);
 
 /** Rejects any /api/* request without a valid signed session cookie. */
 const authMiddleware = createMiddleware().server(async ({ request, pathname, next }) => {

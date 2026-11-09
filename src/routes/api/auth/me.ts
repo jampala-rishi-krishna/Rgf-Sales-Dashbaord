@@ -7,7 +7,8 @@ export const Route = createFileRoute("/api/auth/me")({
     handlers: {
       GET: async ({ request }) => {
         const user = getSession(request);
-        if (!user) return json({ user: null, flags: getFlags(), dryRun: isDryRun() }, 401);
+        // Signed out: expose only what the login page needs, nothing operational.
+        if (!user) return json({ user: null, flags: { googleSso: getFlags().googleSso } }, 401);
         return json({ user, flags: getFlags(), dryRun: isDryRun() });
       },
     },
