@@ -17,13 +17,10 @@ export const Route = createFileRoute("/api/sms-conversations")({
           });
         } catch (err) {
           console.error("[sms-conversations] fetch error:", err);
-          return new Response(
-            JSON.stringify({ error: "Failed to fetch SMS conversations" }),
-            {
-              status: 500,
-              headers: { "Content-Type": "application/json" },
-            }
-          );
+          return new Response(JSON.stringify({ error: "Failed to fetch SMS conversations" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },

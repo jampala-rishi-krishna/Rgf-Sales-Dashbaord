@@ -13,19 +13,39 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
+import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
+import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
+import { Route as AppViberRouteImport } from './routes/_app.viber'
 import { Route as AppWebsiteRouteImport } from './routes/_app.website'
 import { Route as AppWhatsappRouteImport } from './routes/_app.whatsapp'
+import { Route as ApiActivityRouteImport } from './routes/api/activity'
+import { Route as ApiAgentHealthRouteImport } from './routes/api/agent-health'
+import { Route as ApiCampaignRunsRouteImport } from './routes/api/campaign-runs'
 import { Route as ApiGmailFlagRouteImport } from './routes/api/gmail-flag'
+import { Route as ApiGmailSendRouteImport } from './routes/api/gmail-send'
 import { Route as ApiGmailThreadRouteImport } from './routes/api/gmail-thread'
 import { Route as ApiGmailThreadsRouteImport } from './routes/api/gmail-threads'
+import { Route as ApiGmailTrashRouteImport } from './routes/api/gmail-trash'
 import { Route as ApiSmsConversationsRouteImport } from './routes/api/sms-conversations'
 import { Route as ApiTwilioMessagesRouteImport } from './routes/api/twilio-messages'
 import { Route as ApiVapiCallsRouteImport } from './routes/api/vapi-calls'
 import { Route as ApiVapiRecordingRouteImport } from './routes/api/vapi-recording'
+import { Route as ApiViberConversationsRouteImport } from './routes/api/viber-conversations'
 import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website-chat-sessions'
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
+import { Route as ApiActionsBulkRouteImport } from './routes/api/actions/bulk'
+import { Route as ApiActionsCallRouteImport } from './routes/api/actions/call'
+import { Route as ApiActionsOpenerRouteImport } from './routes/api/actions/opener'
+import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
+import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiCrmPreLeadsRouteImport } from './routes/api/crm/pre-leads'
+import { Route as ApiCrmPreLeadsCountRouteImport } from './routes/api/crm/pre-leads-count'
+import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -46,14 +66,29 @@ const AppCallsRoute = AppCallsRouteImport.update({
   path: '/calls',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCampaignsRoute = AppCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEmailRoute = AppEmailRouteImport.update({
   id: '/email',
   path: '/email',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSmsRoute = AppSmsRouteImport.update({
   id: '/sms',
   path: '/sms',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppViberRoute = AppViberRouteImport.update({
+  id: '/viber',
+  path: '/viber',
   getParentRoute: () => AppRoute,
 } as any)
 const AppWebsiteRoute = AppWebsiteRouteImport.update({
@@ -66,9 +101,29 @@ const AppWhatsappRoute = AppWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiActivityRoute = ApiActivityRouteImport.update({
+  id: '/api/activity',
+  path: '/api/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentHealthRoute = ApiAgentHealthRouteImport.update({
+  id: '/api/agent-health',
+  path: '/api/agent-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCampaignRunsRoute = ApiCampaignRunsRouteImport.update({
+  id: '/api/campaign-runs',
+  path: '/api/campaign-runs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGmailFlagRoute = ApiGmailFlagRouteImport.update({
   id: '/api/gmail-flag',
   path: '/api/gmail-flag',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGmailSendRoute = ApiGmailSendRouteImport.update({
+  id: '/api/gmail-send',
+  path: '/api/gmail-send',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGmailThreadRoute = ApiGmailThreadRouteImport.update({
@@ -79,6 +134,11 @@ const ApiGmailThreadRoute = ApiGmailThreadRouteImport.update({
 const ApiGmailThreadsRoute = ApiGmailThreadsRouteImport.update({
   id: '/api/gmail-threads',
   path: '/api/gmail-threads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGmailTrashRoute = ApiGmailTrashRouteImport.update({
+  id: '/api/gmail-trash',
+  path: '/api/gmail-trash',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSmsConversationsRoute = ApiSmsConversationsRouteImport.update({
@@ -101,6 +161,11 @@ const ApiVapiRecordingRoute = ApiVapiRecordingRouteImport.update({
   path: '/api/vapi-recording',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiViberConversationsRoute = ApiViberConversationsRouteImport.update({
+  id: '/api/viber-conversations',
+  path: '/api/viber-conversations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebsiteChatSessionsRoute = ApiWebsiteChatSessionsRouteImport.update({
   id: '/api/website-chat-sessions',
   path: '/api/website-chat-sessions',
@@ -112,62 +177,177 @@ const ApiWhatsappConversationsRoute =
     path: '/api/whatsapp-conversations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiActionsBulkRoute = ApiActionsBulkRouteImport.update({
+  id: '/api/actions/bulk',
+  path: '/api/actions/bulk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActionsCallRoute = ApiActionsCallRouteImport.update({
+  id: '/api/actions/call',
+  path: '/api/actions/call',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActionsOpenerRoute = ApiActionsOpenerRouteImport.update({
+  id: '/api/actions/opener',
+  path: '/api/actions/opener',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActionsReplyRoute = ApiActionsReplyRouteImport.update({
+  id: '/api/actions/reply',
+  path: '/api/actions/reply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthGoogleRoute = ApiAuthGoogleRouteImport.update({
+  id: '/api/auth/google',
+  path: '/api/auth/google',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCrmPreLeadsRoute = ApiCrmPreLeadsRouteImport.update({
+  id: '/api/crm/pre-leads',
+  path: '/api/crm/pre-leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCrmPreLeadsCountRoute = ApiCrmPreLeadsCountRouteImport.update({
+  id: '/api/crm/pre-leads-count',
+  path: '/api/crm/pre-leads-count',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthGoogleCallbackRoute = ApiAuthGoogleCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => ApiAuthGoogleRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
+  '/campaigns': typeof AppCampaignsRoute
   '/email': typeof AppEmailRoute
+  '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
+  '/viber': typeof AppViberRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
+  '/api/activity': typeof ApiActivityRoute
+  '/api/agent-health': typeof ApiAgentHealthRoute
+  '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
+  '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/gmail-trash': typeof ApiGmailTrashRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/viber-conversations': typeof ApiViberConversationsRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
+  '/api/actions/bulk': typeof ApiActionsBulkRoute
+  '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/opener': typeof ApiActionsOpenerRoute
+  '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
+  '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
+  '/campaigns': typeof AppCampaignsRoute
   '/email': typeof AppEmailRoute
+  '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
+  '/viber': typeof AppViberRoute
   '/website': typeof AppWebsiteRoute
   '/whatsapp': typeof AppWhatsappRoute
+  '/api/activity': typeof ApiActivityRoute
+  '/api/agent-health': typeof ApiAgentHealthRoute
+  '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
+  '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/gmail-trash': typeof ApiGmailTrashRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/viber-conversations': typeof ApiViberConversationsRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/': typeof AppIndexRoute
+  '/api/actions/bulk': typeof ApiActionsBulkRoute
+  '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/opener': typeof ApiActionsOpenerRoute
+  '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
+  '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/calls': typeof AppCallsRoute
+  '/_app/campaigns': typeof AppCampaignsRoute
   '/_app/email': typeof AppEmailRoute
+  '/_app/inbox': typeof AppInboxRoute
   '/_app/sms': typeof AppSmsRoute
+  '/_app/viber': typeof AppViberRoute
   '/_app/website': typeof AppWebsiteRoute
   '/_app/whatsapp': typeof AppWhatsappRoute
+  '/api/activity': typeof ApiActivityRoute
+  '/api/agent-health': typeof ApiAgentHealthRoute
+  '/api/campaign-runs': typeof ApiCampaignRunsRoute
   '/api/gmail-flag': typeof ApiGmailFlagRoute
+  '/api/gmail-send': typeof ApiGmailSendRoute
   '/api/gmail-thread': typeof ApiGmailThreadRoute
   '/api/gmail-threads': typeof ApiGmailThreadsRoute
+  '/api/gmail-trash': typeof ApiGmailTrashRoute
   '/api/sms-conversations': typeof ApiSmsConversationsRoute
   '/api/twilio-messages': typeof ApiTwilioMessagesRoute
   '/api/vapi-calls': typeof ApiVapiCallsRoute
   '/api/vapi-recording': typeof ApiVapiRecordingRoute
+  '/api/viber-conversations': typeof ApiViberConversationsRoute
   '/api/website-chat-sessions': typeof ApiWebsiteChatSessionsRoute
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/_app/': typeof AppIndexRoute
+  '/api/actions/bulk': typeof ApiActionsBulkRoute
+  '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/opener': typeof ApiActionsOpenerRoute
+  '/api/actions/reply': typeof ApiActionsReplyRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
+  '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -175,70 +355,146 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/calls'
+    | '/campaigns'
     | '/email'
+    | '/inbox'
     | '/sms'
+    | '/viber'
     | '/website'
     | '/whatsapp'
+    | '/api/activity'
+    | '/api/agent-health'
+    | '/api/campaign-runs'
     | '/api/gmail-flag'
+    | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/gmail-trash'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/viber-conversations'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
+    | '/api/actions/bulk'
+    | '/api/actions/call'
+    | '/api/actions/opener'
+    | '/api/actions/reply'
+    | '/api/auth/google'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/crm/pre-leads'
+    | '/api/crm/pre-leads-count'
+    | '/api/auth/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/calls'
+    | '/campaigns'
     | '/email'
+    | '/inbox'
     | '/sms'
+    | '/viber'
     | '/website'
     | '/whatsapp'
+    | '/api/activity'
+    | '/api/agent-health'
+    | '/api/campaign-runs'
     | '/api/gmail-flag'
+    | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/gmail-trash'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/viber-conversations'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/'
+    | '/api/actions/bulk'
+    | '/api/actions/call'
+    | '/api/actions/opener'
+    | '/api/actions/reply'
+    | '/api/auth/google'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/crm/pre-leads'
+    | '/api/crm/pre-leads-count'
+    | '/api/auth/google/callback'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/calls'
+    | '/_app/campaigns'
     | '/_app/email'
+    | '/_app/inbox'
     | '/_app/sms'
+    | '/_app/viber'
     | '/_app/website'
     | '/_app/whatsapp'
+    | '/api/activity'
+    | '/api/agent-health'
+    | '/api/campaign-runs'
     | '/api/gmail-flag'
+    | '/api/gmail-send'
     | '/api/gmail-thread'
     | '/api/gmail-threads'
+    | '/api/gmail-trash'
     | '/api/sms-conversations'
     | '/api/twilio-messages'
     | '/api/vapi-calls'
     | '/api/vapi-recording'
+    | '/api/viber-conversations'
     | '/api/website-chat-sessions'
     | '/api/whatsapp-conversations'
     | '/_app/'
+    | '/api/actions/bulk'
+    | '/api/actions/call'
+    | '/api/actions/opener'
+    | '/api/actions/reply'
+    | '/api/auth/google'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/crm/pre-leads'
+    | '/api/crm/pre-leads-count'
+    | '/api/auth/google/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiActivityRoute: typeof ApiActivityRoute
+  ApiAgentHealthRoute: typeof ApiAgentHealthRoute
+  ApiCampaignRunsRoute: typeof ApiCampaignRunsRoute
   ApiGmailFlagRoute: typeof ApiGmailFlagRoute
+  ApiGmailSendRoute: typeof ApiGmailSendRoute
   ApiGmailThreadRoute: typeof ApiGmailThreadRoute
   ApiGmailThreadsRoute: typeof ApiGmailThreadsRoute
+  ApiGmailTrashRoute: typeof ApiGmailTrashRoute
   ApiSmsConversationsRoute: typeof ApiSmsConversationsRoute
   ApiTwilioMessagesRoute: typeof ApiTwilioMessagesRoute
   ApiVapiCallsRoute: typeof ApiVapiCallsRoute
   ApiVapiRecordingRoute: typeof ApiVapiRecordingRoute
+  ApiViberConversationsRoute: typeof ApiViberConversationsRoute
   ApiWebsiteChatSessionsRoute: typeof ApiWebsiteChatSessionsRoute
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
+  ApiActionsBulkRoute: typeof ApiActionsBulkRoute
+  ApiActionsCallRoute: typeof ApiActionsCallRoute
+  ApiActionsOpenerRoute: typeof ApiActionsOpenerRoute
+  ApiActionsReplyRoute: typeof ApiActionsReplyRoute
+  ApiAuthGoogleRoute: typeof ApiAuthGoogleRouteWithChildren
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiCrmPreLeadsRoute: typeof ApiCrmPreLeadsRoute
+  ApiCrmPreLeadsCountRoute: typeof ApiCrmPreLeadsCountRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -271,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCallsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/campaigns': {
+      id: '/_app/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof AppCampaignsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/email': {
       id: '/_app/email'
       path: '/email'
@@ -278,11 +541,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmailRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inbox': {
+      id: '/_app/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AppInboxRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/sms': {
       id: '/_app/sms'
       path: '/sms'
       fullPath: '/sms'
       preLoaderRoute: typeof AppSmsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/viber': {
+      id: '/_app/viber'
+      path: '/viber'
+      fullPath: '/viber'
+      preLoaderRoute: typeof AppViberRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/website': {
@@ -299,11 +576,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWhatsappRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/activity': {
+      id: '/api/activity'
+      path: '/api/activity'
+      fullPath: '/api/activity'
+      preLoaderRoute: typeof ApiActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent-health': {
+      id: '/api/agent-health'
+      path: '/api/agent-health'
+      fullPath: '/api/agent-health'
+      preLoaderRoute: typeof ApiAgentHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/campaign-runs': {
+      id: '/api/campaign-runs'
+      path: '/api/campaign-runs'
+      fullPath: '/api/campaign-runs'
+      preLoaderRoute: typeof ApiCampaignRunsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/gmail-flag': {
       id: '/api/gmail-flag'
       path: '/api/gmail-flag'
       fullPath: '/api/gmail-flag'
       preLoaderRoute: typeof ApiGmailFlagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gmail-send': {
+      id: '/api/gmail-send'
+      path: '/api/gmail-send'
+      fullPath: '/api/gmail-send'
+      preLoaderRoute: typeof ApiGmailSendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/gmail-thread': {
@@ -318,6 +623,13 @@ declare module '@tanstack/react-router' {
       path: '/api/gmail-threads'
       fullPath: '/api/gmail-threads'
       preLoaderRoute: typeof ApiGmailThreadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gmail-trash': {
+      id: '/api/gmail-trash'
+      path: '/api/gmail-trash'
+      fullPath: '/api/gmail-trash'
+      preLoaderRoute: typeof ApiGmailTrashRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sms-conversations': {
@@ -348,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVapiRecordingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/viber-conversations': {
+      id: '/api/viber-conversations'
+      path: '/api/viber-conversations'
+      fullPath: '/api/viber-conversations'
+      preLoaderRoute: typeof ApiViberConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/website-chat-sessions': {
       id: '/api/website-chat-sessions'
       path: '/api/website-chat-sessions'
@@ -362,13 +681,93 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWhatsappConversationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/actions/bulk': {
+      id: '/api/actions/bulk'
+      path: '/api/actions/bulk'
+      fullPath: '/api/actions/bulk'
+      preLoaderRoute: typeof ApiActionsBulkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/actions/call': {
+      id: '/api/actions/call'
+      path: '/api/actions/call'
+      fullPath: '/api/actions/call'
+      preLoaderRoute: typeof ApiActionsCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/actions/opener': {
+      id: '/api/actions/opener'
+      path: '/api/actions/opener'
+      fullPath: '/api/actions/opener'
+      preLoaderRoute: typeof ApiActionsOpenerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/actions/reply': {
+      id: '/api/actions/reply'
+      path: '/api/actions/reply'
+      fullPath: '/api/actions/reply'
+      preLoaderRoute: typeof ApiActionsReplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/google': {
+      id: '/api/auth/google'
+      path: '/api/auth/google'
+      fullPath: '/api/auth/google'
+      preLoaderRoute: typeof ApiAuthGoogleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/crm/pre-leads': {
+      id: '/api/crm/pre-leads'
+      path: '/api/crm/pre-leads'
+      fullPath: '/api/crm/pre-leads'
+      preLoaderRoute: typeof ApiCrmPreLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/crm/pre-leads-count': {
+      id: '/api/crm/pre-leads-count'
+      path: '/api/crm/pre-leads-count'
+      fullPath: '/api/crm/pre-leads-count'
+      preLoaderRoute: typeof ApiCrmPreLeadsCountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/google/callback': {
+      id: '/api/auth/google/callback'
+      path: '/callback'
+      fullPath: '/api/auth/google/callback'
+      preLoaderRoute: typeof ApiAuthGoogleCallbackRouteImport
+      parentRoute: typeof ApiAuthGoogleRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppCallsRoute: typeof AppCallsRoute
+  AppCampaignsRoute: typeof AppCampaignsRoute
   AppEmailRoute: typeof AppEmailRoute
+  AppInboxRoute: typeof AppInboxRoute
   AppSmsRoute: typeof AppSmsRoute
+  AppViberRoute: typeof AppViberRoute
   AppWebsiteRoute: typeof AppWebsiteRoute
   AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -376,8 +775,11 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCallsRoute: AppCallsRoute,
+  AppCampaignsRoute: AppCampaignsRoute,
   AppEmailRoute: AppEmailRoute,
+  AppInboxRoute: AppInboxRoute,
   AppSmsRoute: AppSmsRoute,
+  AppViberRoute: AppViberRoute,
   AppWebsiteRoute: AppWebsiteRoute,
   AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
@@ -385,18 +787,46 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface ApiAuthGoogleRouteChildren {
+  ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
+}
+
+const ApiAuthGoogleRouteChildren: ApiAuthGoogleRouteChildren = {
+  ApiAuthGoogleCallbackRoute: ApiAuthGoogleCallbackRoute,
+}
+
+const ApiAuthGoogleRouteWithChildren = ApiAuthGoogleRoute._addFileChildren(
+  ApiAuthGoogleRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiActivityRoute: ApiActivityRoute,
+  ApiAgentHealthRoute: ApiAgentHealthRoute,
+  ApiCampaignRunsRoute: ApiCampaignRunsRoute,
   ApiGmailFlagRoute: ApiGmailFlagRoute,
+  ApiGmailSendRoute: ApiGmailSendRoute,
   ApiGmailThreadRoute: ApiGmailThreadRoute,
   ApiGmailThreadsRoute: ApiGmailThreadsRoute,
+  ApiGmailTrashRoute: ApiGmailTrashRoute,
   ApiSmsConversationsRoute: ApiSmsConversationsRoute,
   ApiTwilioMessagesRoute: ApiTwilioMessagesRoute,
   ApiVapiCallsRoute: ApiVapiCallsRoute,
   ApiVapiRecordingRoute: ApiVapiRecordingRoute,
+  ApiViberConversationsRoute: ApiViberConversationsRoute,
   ApiWebsiteChatSessionsRoute: ApiWebsiteChatSessionsRoute,
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
+  ApiActionsBulkRoute: ApiActionsBulkRoute,
+  ApiActionsCallRoute: ApiActionsCallRoute,
+  ApiActionsOpenerRoute: ApiActionsOpenerRoute,
+  ApiActionsReplyRoute: ApiActionsReplyRoute,
+  ApiAuthGoogleRoute: ApiAuthGoogleRouteWithChildren,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiCrmPreLeadsRoute: ApiCrmPreLeadsRoute,
+  ApiCrmPreLeadsCountRoute: ApiCrmPreLeadsCountRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

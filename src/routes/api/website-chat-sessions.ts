@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const N8N_WEBHOOK_URL = "https://rareglobalfood.app.n8n.cloud/webhook/martin-chat-dashboard-sessions";
+const N8N_WEBHOOK_URL =
+  "https://rareglobalfood.app.n8n.cloud/webhook/martin-chat-dashboard-sessions";
 
 export const Route = createFileRoute("/api/website-chat-sessions")({
   server: {

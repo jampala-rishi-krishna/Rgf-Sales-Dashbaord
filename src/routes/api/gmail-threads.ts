@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getGmailAccessToken, gmailFetch, getHeader, GMAIL_BUSINESS_EMAIL } from "@/lib/gmail-server";
+import {
+  getGmailAccessToken,
+  GmailConnectionError,
+  gmailFetch,
+  type GmailThread,
+  type GmailThreadList,
+  getHeader,
+  GMAIL_BUSINESS_EMAIL,
+} from "@/lib/gmail-server";
 
 const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 const THREAD_META_CHUNK_SIZE = 15;
@@ -21,7 +29,10 @@ const EXCLUDED_SUBJECTS = [
   "Assignment Confirmed",
 ];
 const EXCLUDED_KEYWORDS = ["RARECHAIN"];
-const EXCLUDED_SUBJECT_RE = new RegExp(EXCLUDED_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "i");
+const EXCLUDED_SUBJECT_RE = new RegExp(
+  EXCLUDED_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"),
+  "i",
+);
 
 const EXCLUSION_QUERY = [
   ...EXCLUDED_SENDERS.map((s) => `-from:${s} -to:${s}`),
@@ -36,19 +47,37 @@ function chunk<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
+type ThreadSummary = {
+  threadId: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  direction: "inbound" | "outbound";
+  snippet: string;
+  messageCount: number;
+  isUnread: boolean;
+  isFlagged: boolean;
+};
+
 // Fetches one thread's metadata, retrying with backoff on Gmail's 429 rate-limit
 // response. Returns null (instead of throwing) if it never succeeds, so one
 // rate-limited thread doesn't take down the whole batch.
-async function fetchThreadMetaWithRetry(threadId: string, token: string): Promise<any | null> {
+async function fetchThreadMetaWithRetry(
+  threadId: string,
+  token: string,
+): Promise<GmailThread | null> {
   const url = `${GMAIL_API_BASE}/threads/${threadId}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date`;
   for (let attempt = 0; attempt <= MAX_RETRIES_ON_429; attempt++) {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) return res.json();
+    if (res.ok) return (await res.json()) as GmailThread;
     if (res.status === 429 && attempt < MAX_RETRIES_ON_429) {
       await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
       continue;
     }
-    console.error(`[gmail-threads] giving up on thread ${threadId}: ${res.status} ${await res.text()}`);
+    console.error(
+      `[gmail-threads] giving up on thread ${threadId}: ${res.status} ${await res.text()}`,
+    );
     return null;
   }
   return null;
@@ -65,28 +94,34 @@ export const Route = createFileRoute("/api/gmail-threads")({
         try {
           const token = await getGmailAccessToken();
 
-          const listQuery = new URLSearchParams({ maxResults, q: `-in:chats -in:draft ${EXCLUSION_QUERY}` });
+          const listQuery = new URLSearchParams({
+            maxResults,
+            q: `-in:chats -in:draft -in:trash ${EXCLUSION_QUERY}`,
+          });
           if (pageToken) listQuery.set("pageToken", pageToken);
 
-          const listData = await gmailFetch(`/threads?${listQuery.toString()}`, token);
+          const listData = await gmailFetch<GmailThreadList>(
+            `/threads?${listQuery.toString()}`,
+            token,
+          );
           const threadStubs: { id: string }[] = listData.threads ?? [];
 
           // Fetch per-thread metadata in small concurrent batches rather than all at
           // once — Gmail's per-user rate limit rejects a single Promise.all over 100
           // simultaneous requests with 429s, which used to fail the entire response.
-          const threads: any[] = [];
+          const threads: ThreadSummary[] = [];
           for (const batch of chunk(threadStubs, THREAD_META_CHUNK_SIZE)) {
             const batchResults = await Promise.all(
               batch.map(async (stub) => {
                 const meta = await fetchThreadMetaWithRetry(stub.id, token);
                 if (!meta) return null;
 
-                const messages: any[] = meta.messages ?? [];
+                const messages = meta.messages ?? [];
                 const last = messages[messages.length - 1];
                 const headers = last?.payload?.headers;
                 // Drop the whole thread if any message in it involves an excluded alias,
                 // so old and new logistics mail never shows up.
-                const involvesExcluded = messages.some((m: any) => {
+                const involvesExcluded = messages.some((m) => {
                   const h = m.payload?.headers;
                   const addrs = `${getHeader(h, "From")} ${getHeader(h, "To")}`.toLowerCase();
                   return (
@@ -100,9 +135,11 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 const to = getHeader(headers, "To");
                 const subject = getHeader(headers, "Subject") || "(no subject)";
                 const date = getHeader(headers, "Date");
-                const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL) ? "outbound" : "inbound";
+                const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL)
+                  ? "outbound"
+                  : "inbound";
                 const isUnread = messages.some((m) => (m.labelIds ?? []).includes("UNREAD"));
-                const isFlagged = messages.some((m: any) => (m.labelIds ?? []).includes("STARRED"));
+                const isFlagged = messages.some((m) => (m.labelIds ?? []).includes("STARRED"));
 
                 return {
                   threadId: stub.id,
@@ -118,17 +155,26 @@ export const Route = createFileRoute("/api/gmail-threads")({
                 };
               }),
             );
-            threads.push(...batchResults.filter((t) => t !== null));
+            threads.push(...batchResults.filter((t): t is ThreadSummary => t !== null));
           }
 
           threads.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
           return new Response(
             JSON.stringify({ threads, nextPageToken: listData.nextPageToken ?? null }),
-            { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } },
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+            },
           );
         } catch (err) {
           console.error("[gmail-threads] error:", err);
+          if (err instanceof GmailConnectionError) {
+            return new Response(JSON.stringify({ error: err.message, code: err.code }), {
+              status: 503,
+              headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+            });
+          }
           return new Response(JSON.stringify({ error: "Failed to list Gmail threads" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },

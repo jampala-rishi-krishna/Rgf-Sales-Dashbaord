@@ -17,13 +17,10 @@ export const Route = createFileRoute("/api/whatsapp-conversations")({
           });
         } catch (err) {
           console.error("[whatsapp-conversations] fetch error:", err);
-          return new Response(
-            JSON.stringify({ error: "Failed to fetch WhatsApp conversations" }),
-            {
-              status: 500,
-              headers: { "Content-Type": "application/json" },
-            }
-          );
+          return new Response(JSON.stringify({ error: "Failed to fetch WhatsApp conversations" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },

@@ -13,7 +13,12 @@ function useDocumentVisible() {
 }
 
 /** Polls `fn` every `ms`, pauses when the tab is hidden, backs off exponentially on errors (max 5 min). */
-export function usePolling<T>(key: QueryKey, fn: () => Promise<T>, ms: number, opts: { enabled?: boolean } = {}) {
+export function usePolling<T>(
+  key: QueryKey,
+  fn: () => Promise<T>,
+  ms: number,
+  opts: { enabled?: boolean } = {},
+) {
   const visible = useDocumentVisible();
   return useQuery<T>({
     queryKey: key,

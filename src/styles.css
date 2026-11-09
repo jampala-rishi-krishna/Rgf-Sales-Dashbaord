@@ -9,6 +9,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-card: var(--rgf-radius);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -32,47 +33,379 @@
   --color-rare-red: var(--rare-red);
   --color-hunter: var(--hunter);
   --color-near-black: var(--near-black);
-  --font-sans: Arial, Helvetica, sans-serif;
+  /* RGF shell tokens as Tailwind colors: bg-surface, text-rgf-ink, bg-ch, text-ch-text ... */
+  --color-surface: var(--surface);
+  --color-rgf-red: var(--rgf-red);
+  --color-rgf-red-600: var(--rgf-red-600);
+  --color-rgf-green: var(--rgf-green);
+  --color-rgf-ink: var(--rgf-ink);
+  --color-rgf-beige: var(--rgf-beige);
+  --color-rgf-cream: var(--rgf-cream);
+  --color-rgf-muted: var(--rgf-muted);
+  --color-ch: var(--ch);
+  --color-ch-primary: var(--ch-primary);
+  --color-ch-header: var(--ch-header);
+  --color-ch-app-bg: var(--ch-app-bg);
+  --color-ch-panel: var(--ch-panel);
+  --color-ch-chat-bg: var(--ch-chat-bg);
+  --color-ch-out: var(--ch-out);
+  --color-ch-in: var(--ch-in);
+  --color-ch-text: var(--ch-text);
+  --color-ch-text-2: var(--ch-text-2);
+  --color-ch-divider: var(--ch-divider);
+  --shadow-card: var(--shadow-card);
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* ── RGF shell (§4.1) ─────────────────────────────────────────────────────── */
 :root {
-  --radius: 0.5rem;
-  /* Brand */
-  --rare-red: #86000B;
-  --beige: #FFEBCE;
-  --hunter: #33673B;
-  --near-black: #1B2419;
+  --rgf-red: #86000b;
+  --rgf-red-600: #a3101c;
+  --rgf-green: #33673b;
+  --rgf-ink: #1b2419;
+  --rgf-beige: #ffebce;
+  --rgf-cream: #fff8f0;
+  --surface: #ffffff;
+  --rgf-muted: #6b6f68; /* brief's --muted (text). Tailwind's --muted stays a surface colour for shadcn. */
+  --rgf-radius: 14px;
+  --shadow-card: 0 1px 2px rgba(27, 36, 25, 0.06), 0 8px 24px rgba(27, 36, 25, 0.06);
 
-  --background: #FFFFFF;
-  --foreground: #1B2419;
-  --card: #FFFFFF;
-  --card-foreground: #1B2419;
-  --popover: #FFFFFF;
-  --popover-foreground: #1B2419;
-  --primary: #86000B;
-  --primary-foreground: #FFFFFF;
-  --secondary: #FFEBCE;
-  --secondary-foreground: #1B2419;
-  --muted: #F5F1EA;
-  --muted-foreground: #6B6B66;
-  --accent: #FFEBCE;
-  --accent-foreground: #86000B;
-  --destructive: #86000B;
-  --destructive-foreground: #FFFFFF;
-  --border: #E8E2D5;
-  --input: #E8E2D5;
-  --ring: #86000B;
+  --radius: 0.625rem;
+  /* Legacy brand aliases (used by existing pages) */
+  --rare-red: var(--rgf-red);
+  --beige: var(--rgf-beige);
+  --hunter: var(--rgf-green);
+  --near-black: #1b2419;
+
+  /* shadcn theme mapped onto RGF tokens */
+  --background: var(--rgf-cream);
+  --foreground: var(--rgf-ink);
+  --card: var(--surface);
+  --card-foreground: var(--rgf-ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--rgf-ink);
+  --primary: var(--rgf-red);
+  --primary-foreground: #ffffff;
+  --secondary: var(--rgf-beige);
+  --secondary-foreground: var(--rgf-ink);
+  --muted: #f5f1ea;
+  --muted-foreground: var(--rgf-muted);
+  --accent: var(--rgf-beige);
+  --accent-foreground: var(--rgf-red);
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --border: #ede6dc;
+  --input: #ede6dc;
+  --ring: var(--rgf-red);
+
+  --ch: var(--rgf-red);
+  color-scheme: light;
+}
+
+.dark {
+  --surface: #151a14;
+  --rgf-cream: #0e120d;
+  --rgf-ink: #f2eee7;
+  --rgf-muted: #9aa096;
+  --rgf-beige: #2a2418;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  --background: var(--rgf-cream);
+  --foreground: var(--rgf-ink);
+  --card: var(--surface);
+  --card-foreground: var(--rgf-ink);
+  --popover: #1a2019;
+  --popover-foreground: var(--rgf-ink);
+  --primary: #c0283a;
+  --primary-foreground: #ffffff;
+  --secondary: #222a20;
+  --secondary-foreground: var(--rgf-ink);
+  --muted: #1d241b;
+  --muted-foreground: var(--rgf-muted);
+  --accent: #232b21;
+  --accent-foreground: #f5b8bf;
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+  --border: #262d24;
+  --input: #2d352b;
+  --ring: #c0283a;
+  color-scheme: dark;
+}
+
+/* ── Channel tokens (§4.2, verbatim) ──────────────────────────────────────── */
+[data-channel="whatsapp"] {
+  --ch: #25d366;
+  --ch-primary: #008069;
+  --ch-header: #f0f2f5;
+  --ch-app-bg: #f0f2f5;
+  --ch-panel: #ffffff;
+  --ch-chat-bg: #efeae2;
+  --ch-out: #d9fdd3;
+  --ch-in: #ffffff;
+  --ch-text: #111b21;
+  --ch-text-2: #54656f;
+  --ch-divider: #e9edef;
+  --ch-tick-read: #53bdeb;
+}
+.dark [data-channel="whatsapp"] {
+  --ch-primary: #00a884;
+  --ch-app-bg: #111b21;
+  --ch-panel: #111b21;
+  --ch-header: #202c33;
+  --ch-chat-bg: #0b141a;
+  --ch-out: #005c4b;
+  --ch-in: #202c33;
+  --ch-text: #e9edef;
+  --ch-text-2: #c2cbd0;
+  --ch-divider: #2a3942;
+}
+[data-channel="viber"] {
+  --ch: #7360f2;
+  --ch-primary: #7360f2;
+  --ch-deep: #59267c;
+  --ch-soft: #8f5db7;
+  --ch-app-bg: #f7f6fb;
+  --ch-panel: #ffffff;
+  --ch-chat-bg: #ffffff;
+  --ch-out: #e8e4fd;
+  --ch-in: #f1f0f5;
+  --ch-text: #1e1b2e;
+  --ch-text-2: #7a7790;
+  --ch-divider: #eceaf3;
+}
+[data-channel="sms"] {
+  --ch: #1a73e8;
+  --ch-primary: #0b57d0;
+  --ch-app-bg: #f8fafd;
+  --ch-panel: #ffffff;
+  --ch-chat-bg: #ffffff;
+  --ch-out: #d3e3fd;
+  --ch-out-text: #041e49;
+  --ch-in: #e9eef6;
+  --ch-text: #1f1f1f;
+  --ch-text-2: #5e5e5e;
+}
+[data-channel="email"] {
+  --ch: #ea4335;
+  --ch-red-dark: #c5221f;
+  --ch-blue: #4285f4;
+  --ch-yellow: #fbbc04;
+  --ch-green: #34a853;
+  --ch-app-bg: #f6f8fc;
+  --ch-panel: #ffffff;
+  --ch-compose: #c2e7ff;
+  --ch-nav-active: #d3e3fd;
+  --ch-row-read: #f2f6fc;
+  --ch-row-selected: #c2dbff;
+  --ch-link: #0b57d0;
+  --ch-star: #f4b400;
+  --ch-text: #1f1f1f;
+  --ch-text-2: #444746;
+}
+[data-channel="voice"] {
+  --ch: #f97316;
+  --ch-accept: #34c759;
+  --ch-hangup: #ff3b30;
+  --ch-app-bg: #0f1412;
+  --ch-panel: #161c19;
+  --ch-text: #f2f4f3;
+  --ch-text-2: #9ba6a0;
+}
+[data-channel="web"] {
+  --ch: #86000b;
+}
+[data-channel="crm"] {
+  --ch: #226db4;
+}
+[data-channel="scout"] {
+  --ch: #0ea5a4;
+}
+
+/* Derived dark versions */
+.dark [data-channel="viber"] {
+  --ch-primary: #8b7bf5;
+  --ch-app-bg: #141220;
+  --ch-panel: #1b1829;
+  --ch-chat-bg: #17141f;
+  --ch-out: #3b2f7a;
+  --ch-in: #262236;
+  --ch-text: #eceaf6;
+  --ch-text-2: #a19db8;
+  --ch-divider: #2c2840;
+}
+.dark [data-channel="sms"] {
+  --ch-primary: #a8c7fa;
+  --ch-app-bg: #111318;
+  --ch-panel: #1b1d22;
+  --ch-chat-bg: #1b1d22;
+  --ch-out: #0842a0;
+  --ch-out-text: #d3e3fd;
+  --ch-in: #2d3036;
+  --ch-text: #e3e3e3;
+  --ch-text-2: #a8abb2;
+  --ch-divider: #2d3036;
+}
+.dark [data-channel="email"] {
+  --ch-app-bg: #111318;
+  --ch-panel: #1b1d22;
+  --ch-compose: #004a77;
+  --ch-nav-active: #0842a0;
+  --ch-row-read: #16181d;
+  --ch-row-selected: #1f3a60;
+  --ch-link: #a8c7fa;
+  --ch-text: #e3e3e3;
+  --ch-text-2: #c4c7c5;
+}
+.dark [data-channel="web"] {
+  --ch: #d4404d;
+}
+.dark [data-channel="crm"] {
+  --ch: #4c8fd6;
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
+  html {
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────────── */
+@utility font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+@utility tabular-nums-ui {
+  font-variant-numeric: tabular-nums;
+}
+@utility rgf-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rgf-radius);
+  box-shadow: var(--shadow-card);
+}
+
+/* Own chat wallpaper: soft dot grid + leaf-like ellipses on --ch-chat-bg. */
+.chat-wallpaper {
+  background-color: var(--ch-chat-bg, #efeae2);
+  background-image:
+    radial-gradient(
+      circle at 12px 12px,
+      color-mix(in srgb, var(--ch-text-2, #667781) 14%, transparent) 1.4px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      ellipse 5px 9px at 34px 30px,
+      color-mix(in srgb, var(--ch-text-2, #667781) 9%, transparent) 60%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 9px 5px at 22px 44px,
+      color-mix(in srgb, var(--ch-text-2, #667781) 7%, transparent) 60%,
+      transparent 62%
+    ),
+    radial-gradient(
+      circle at 46px 8px,
+      color-mix(in srgb, var(--ch-text-2, #667781) 10%, transparent) 2px,
+      transparent 2.4px
+    );
+  background-size:
+    56px 56px,
+    56px 56px,
+    56px 56px,
+    56px 56px;
+  background-position:
+    0 0,
+    0 0,
+    0 0,
+    0 0;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────────── */
+@keyframes rgf-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@keyframes rgf-typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 0.9;
+  }
+}
+@keyframes rgf-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--ch, #86000b) 12%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@keyframes rgf-urgent {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(229, 72, 77, 0);
+  }
+}
+.rgf-pulse-ring {
+  animation: rgf-pulse-ring 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.rgf-typing-dot {
+  animation: rgf-typing 1.2s ease-in-out infinite;
+}
+.rgf-flash {
+  animation: rgf-flash 1.4s ease-out 1;
+}
+.rgf-urgent {
+  animation: rgf-urgent 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .rgf-pulse-ring,
+  .rgf-typing-dot,
+  .rgf-urgent {
+    animation: none !important;
   }
 }
 
@@ -86,7 +419,8 @@
   width: 100% !important;
   table-layout: auto !important;
 }
-.email-body-content div, .email-body-content p {
+.email-body-content div,
+.email-body-content p {
   max-width: 100% !important;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -99,8 +433,9 @@
 
 /* Avoid automatic iOS Safari zoom when tapping inputs */
 @media (max-width: 768px) {
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     font-size: 16px !important;
   }
 }
-

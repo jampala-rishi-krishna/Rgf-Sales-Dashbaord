@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getGmailAccessToken, gmailFetch, extractHtmlBody, getHeader, GMAIL_BUSINESS_EMAIL } from "@/lib/gmail-server";
+import {
+  getGmailAccessToken,
+  gmailFetch,
+  type GmailThread,
+  extractHtmlBody,
+  getHeader,
+  GMAIL_BUSINESS_EMAIL,
+} from "@/lib/gmail-server";
 
 export const Route = createFileRoute("/api/gmail-thread")({
   server: {
@@ -16,19 +23,27 @@ export const Route = createFileRoute("/api/gmail-thread")({
 
         try {
           const token = await getGmailAccessToken();
-          const threadData = await gmailFetch(`/threads/${threadId}?format=full`, token);
+          const threadData = await gmailFetch<GmailThread>(
+            `/threads/${threadId}?format=full`,
+            token,
+          );
 
-          const messages = (threadData.messages ?? []).map((m: any) => {
+          const messages = (threadData.messages ?? []).map((m) => {
             const headers = m.payload?.headers ?? [];
             const from = getHeader(headers, "From");
             const to = getHeader(headers, "To");
             const date = getHeader(headers, "Date");
             const subject = getHeader(headers, "Subject");
-            const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL) ? "outbound" : "inbound";
+            const direction = from.toLowerCase().includes(GMAIL_BUSINESS_EMAIL)
+              ? "outbound"
+              : "inbound";
             return {
               id: m.id,
               from,
               to,
+              cc: getHeader(headers, "Cc"),
+              replyTo: getHeader(headers, "Reply-To"),
+              messageId: getHeader(headers, "Message-ID"),
               subject,
               date,
               direction,
@@ -37,7 +52,7 @@ export const Route = createFileRoute("/api/gmail-thread")({
             };
           });
 
-          messages.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          messages.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
           return new Response(JSON.stringify({ threadId, messages }), {
             status: 200,
