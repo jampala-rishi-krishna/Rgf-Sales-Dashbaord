@@ -12,6 +12,7 @@ import {
 import { SiWhatsapp } from "react-icons/si";
 import { AgentAvatar, DisabledReason } from "@/components/shared";
 import { useMe } from "@/hooks/use-me";
+import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
 import { postAction } from "@/lib/action-client";
 import { formatManila } from "@/lib/channels";
 import { OutcomeChip } from "./call-card";
@@ -21,9 +22,11 @@ import {
   callOutcome,
   callTitle,
   durationSeconds,
+  endedReasonText,
   isLive,
   mmss,
   recordingUrl,
+  summaryText,
   toolChips,
   transcriptLines,
   type VapiCall,
@@ -32,6 +35,13 @@ import {
 export function CallDetail({ call, onBack }: { call: VapiCall; onBack?: () => void }) {
   const lead = callLead(call);
   const outcome = callOutcome(call);
+  const subject = {
+    preLeadId: lead.leadId,
+    name: lead.leadName,
+    company: lead.companyName,
+    phone: lead.phone,
+    product: lead.product,
+  };
   const lines = useMemo(() => transcriptLines(call), [call]);
   const chips = useMemo(() => toolChips(call), [call]);
   const synced = lines.some((l) => l.start != null);
@@ -73,6 +83,7 @@ export function CallDetail({ call, onBack }: { call: VapiCall; onBack?: () => vo
               {callTitle(call)}
             </h2>
             <OutcomeChip outcome={outcome} />
+            <ConvertedBadge subject={subject} />
           </div>
           <div className="truncate text-xs text-[var(--ch-text-2)]">
             <span className="font-mono">{lead.phone ?? "—"}</span>
@@ -80,6 +91,7 @@ export function CallDetail({ call, onBack }: { call: VapiCall; onBack?: () => vo
             {formatManila(call.createdAt)}
           </div>
         </div>
+        <ConvertLeadButton subject={subject} size="sm" tone="dark" className="shrink-0" />
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -102,7 +114,7 @@ export function CallDetail({ call, onBack }: { call: VapiCall; onBack?: () => vo
             />
             <Stat
               label="Ended reason"
-              value={call.endedReason ?? (isLive(call) ? "In progress" : "—")}
+              value={endedReasonText(call) || (isLive(call) ? "In progress" : "—")}
               small
             />
           </section>
@@ -150,7 +162,7 @@ export function CallDetail({ call, onBack }: { call: VapiCall; onBack?: () => vo
               <Sparkles className="size-3.5" /> Summary
             </div>
             <p className="text-sm leading-relaxed text-[var(--ch-text)]">
-              {call.analysis?.summary || "No summary generated."}
+              {summaryText(call) || "No summary generated."}
             </p>
           </section>
 
