@@ -14,7 +14,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppCallsRouteImport } from './routes/_app.calls'
 import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
-import { Route as AppCrmRouteImport } from './routes/_app.crm'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
@@ -43,8 +42,8 @@ import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
-import { Route as ApiCrmPreLeadRouteImport } from './routes/api/crm/pre-lead'
 import { Route as ApiCrmPreLeadsRouteImport } from './routes/api/crm/pre-leads'
+import { Route as ApiCrmPreLeadsCountRouteImport } from './routes/api/crm/pre-leads-count'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -68,11 +67,6 @@ const AppCallsRoute = AppCallsRouteImport.update({
 const AppCampaignsRoute = AppCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCrmRoute = AppCrmRouteImport.update({
-  id: '/crm',
-  path: '/crm',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmailRoute = AppEmailRouteImport.update({
@@ -216,14 +210,14 @@ const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
   path: '/api/auth/me',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCrmPreLeadRoute = ApiCrmPreLeadRouteImport.update({
-  id: '/api/crm/pre-lead',
-  path: '/api/crm/pre-lead',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiCrmPreLeadsRoute = ApiCrmPreLeadsRouteImport.update({
   id: '/api/crm/pre-leads',
   path: '/api/crm/pre-leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCrmPreLeadsCountRoute = ApiCrmPreLeadsCountRouteImport.update({
+  id: '/api/crm/pre-leads-count',
+  path: '/api/crm/pre-leads-count',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -232,7 +226,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
   '/campaigns': typeof AppCampaignsRoute
-  '/crm': typeof AppCrmRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
@@ -261,14 +254,13 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
-  '/api/crm/pre-lead': typeof ApiCrmPreLeadRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
+  '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/calls': typeof AppCallsRoute
   '/campaigns': typeof AppCampaignsRoute
-  '/crm': typeof AppCrmRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
   '/sms': typeof AppSmsRoute
@@ -298,8 +290,8 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
-  '/api/crm/pre-lead': typeof ApiCrmPreLeadRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
+  '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -307,7 +299,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/calls': typeof AppCallsRoute
   '/_app/campaigns': typeof AppCampaignsRoute
-  '/_app/crm': typeof AppCrmRoute
   '/_app/email': typeof AppEmailRoute
   '/_app/inbox': typeof AppInboxRoute
   '/_app/sms': typeof AppSmsRoute
@@ -337,8 +328,8 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
-  '/api/crm/pre-lead': typeof ApiCrmPreLeadRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
+  '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -347,7 +338,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/calls'
     | '/campaigns'
-    | '/crm'
     | '/email'
     | '/inbox'
     | '/sms'
@@ -376,14 +366,13 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
-    | '/api/crm/pre-lead'
     | '/api/crm/pre-leads'
+    | '/api/crm/pre-leads-count'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/calls'
     | '/campaigns'
-    | '/crm'
     | '/email'
     | '/inbox'
     | '/sms'
@@ -413,15 +402,14 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
-    | '/api/crm/pre-lead'
     | '/api/crm/pre-leads'
+    | '/api/crm/pre-leads-count'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/calls'
     | '/_app/campaigns'
-    | '/_app/crm'
     | '/_app/email'
     | '/_app/inbox'
     | '/_app/sms'
@@ -451,8 +439,8 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
-    | '/api/crm/pre-lead'
     | '/api/crm/pre-leads'
+    | '/api/crm/pre-leads-count'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -480,8 +468,8 @@ export interface RootRouteChildren {
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
-  ApiCrmPreLeadRoute: typeof ApiCrmPreLeadRoute
   ApiCrmPreLeadsRoute: typeof ApiCrmPreLeadsRoute
+  ApiCrmPreLeadsCountRoute: typeof ApiCrmPreLeadsCountRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -519,13 +507,6 @@ declare module '@tanstack/react-router' {
       path: '/campaigns'
       fullPath: '/campaigns'
       preLoaderRoute: typeof AppCampaignsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/crm': {
-      id: '/_app/crm'
-      path: '/crm'
-      fullPath: '/crm'
-      preLoaderRoute: typeof AppCrmRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/email': {
@@ -724,18 +705,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/crm/pre-lead': {
-      id: '/api/crm/pre-lead'
-      path: '/api/crm/pre-lead'
-      fullPath: '/api/crm/pre-lead'
-      preLoaderRoute: typeof ApiCrmPreLeadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/crm/pre-leads': {
       id: '/api/crm/pre-leads'
       path: '/api/crm/pre-leads'
       fullPath: '/api/crm/pre-leads'
       preLoaderRoute: typeof ApiCrmPreLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/crm/pre-leads-count': {
+      id: '/api/crm/pre-leads-count'
+      path: '/api/crm/pre-leads-count'
+      fullPath: '/api/crm/pre-leads-count'
+      preLoaderRoute: typeof ApiCrmPreLeadsCountRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -744,7 +725,6 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCallsRoute: typeof AppCallsRoute
   AppCampaignsRoute: typeof AppCampaignsRoute
-  AppCrmRoute: typeof AppCrmRoute
   AppEmailRoute: typeof AppEmailRoute
   AppInboxRoute: typeof AppInboxRoute
   AppSmsRoute: typeof AppSmsRoute
@@ -757,7 +737,6 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppCallsRoute: AppCallsRoute,
   AppCampaignsRoute: AppCampaignsRoute,
-  AppCrmRoute: AppCrmRoute,
   AppEmailRoute: AppEmailRoute,
   AppInboxRoute: AppInboxRoute,
   AppSmsRoute: AppSmsRoute,
@@ -794,8 +773,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
-  ApiCrmPreLeadRoute: ApiCrmPreLeadRoute,
   ApiCrmPreLeadsRoute: ApiCrmPreLeadsRoute,
+  ApiCrmPreLeadsCountRoute: ApiCrmPreLeadsCountRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

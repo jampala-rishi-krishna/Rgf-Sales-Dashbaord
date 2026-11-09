@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { AgentAvatar, AnimatedNumber, ChannelGlyph, LiveDot } from "@/components/shared";
-import { usePreLeads } from "@/hooks/use-pre-leads";
+import { usePreLeadsCount } from "@/hooks/use-pre-leads";
 import { CHANNELS, hasReplied } from "@/lib/channels";
 import type { AgentEvent } from "@/lib/events";
 import { AgentPod } from "./AgentPod";
@@ -138,7 +138,10 @@ function ScoutNode({ compact }: { compact?: boolean }) {
           </div>
         </div>
       </div>
-      <ul className="mt-2 space-y-0.5 text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
+      <ul
+        className="mt-2 space-y-0.5 text-[10px]"
+        style={{ color: "var(--muted-foreground,#6B6F68)" }}
+      >
         <li>Google Maps · Apify</li>
         <li>FireCrawl</li>
         <li>Facebook · LinkedIn</li>
@@ -157,9 +160,9 @@ function ScoutNode({ compact }: { compact?: boolean }) {
 }
 
 function CrmNode() {
-  const q = usePreLeads();
-  const leads = q.data?.leads ?? [];
-  const today = leads.filter((l) => isToday(l.createdTime)).length;
+  const q = usePreLeadsCount();
+  const total = q.data?.total ?? 0;
+  const today = (q.data?.recent ?? []).filter((t) => isToday(t)).length;
   const connected = q.data?.connected !== false;
   return (
     <div
@@ -176,7 +179,7 @@ function CrmNode() {
         className="mt-1 text-2xl font-black tabular-nums"
         style={{ color: "var(--rgf-ink,#1B2419)" }}
       >
-        {q.isLoading ? "…" : connected ? <AnimatedNumber value={leads.length} /> : "—"}
+        {q.isLoading ? "…" : connected ? <AnimatedNumber value={total} /> : "—"}
       </div>
       <div className="text-[10px]" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
         Pre-Leads
@@ -221,10 +224,10 @@ export function LiveOpsCanvas({ data, newEvents }: { data: MissionData; newEvent
   const [dots, setDots] = useState<Dot[]>([]);
 
   // new CRM leads → Scout→CRM dots
-  const preLeads = usePreLeads();
+  const preLeads = usePreLeadsCount();
   const prevLeadCount = useRef<number | null>(null);
   useEffect(() => {
-    const n = preLeads.data?.leads?.length;
+    const n = preLeads.data?.total;
     if (n == null) return;
     const prev = prevLeadCount.current;
     prevLeadCount.current = n;

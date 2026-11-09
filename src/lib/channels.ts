@@ -11,8 +11,8 @@ export const CHANNELS: Record<
   email: { label: "Email", color: "#EA4335", agent: "Martin", route: "/email" },
   voice: { label: "Voice", color: "#F97316", agent: "Mara", route: "/calls" },
   web: { label: "Website", color: "#86000B", agent: "Martin", route: "/website" },
-  crm: { label: "Zoho CRM", color: "#226DB4", agent: "—", route: "/crm" },
-  scout: { label: "Scout", color: "#0EA5A4", agent: "Scout", route: "/crm" },
+  crm: { label: "Zoho CRM", color: "#226DB4", agent: "—", route: "/" },
+  scout: { label: "Scout", color: "#0EA5A4", agent: "Scout", route: "/" },
 };
 
 export type ChatRole = "martin" | "customer" | "human";

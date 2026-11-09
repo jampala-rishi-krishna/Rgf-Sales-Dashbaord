@@ -22,7 +22,6 @@ export const NAV: NavItem[] = [
   { to: "/email", label: "Email", channel: "email" },
   { to: "/calls", label: "Calls", channel: "voice" },
   { to: "/website", label: "Website", channel: "web" },
-  { to: "/crm", label: "CRM", channel: "crm" },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone, action: true },
 ];
 

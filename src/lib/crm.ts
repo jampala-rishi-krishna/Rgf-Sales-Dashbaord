@@ -28,6 +28,16 @@ export type PreLeadsResponse = {
   error?: string;
 };
 
+/** Lightweight home-screen summary from /api/crm/pre-leads-count. */
+export type PreLeadsCount = {
+  connected: boolean;
+  total: number;
+  /** Created_Time of leads from the last ~15 days (for "today" + sparkline). */
+  recent: string[];
+  fetchedAt?: string;
+  error?: string;
+};
+
 export const ZOHO_CRM_ORG_URL = "https://crm.zoho.com/crm/tab/Pre_Leads";
 export function zohoRecordUrl(id: string) {
   return `${ZOHO_CRM_ORG_URL}/${encodeURIComponent(id)}`;

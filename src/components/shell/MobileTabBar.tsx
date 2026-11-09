@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Database, Home, Inbox, Megaphone, MoreHorizontal } from "lucide-react";
+import { Home, Inbox, Megaphone, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ChannelGlyph } from "@/components/shared";
@@ -9,7 +9,6 @@ import { NAV, isActive, type CountKey } from "./nav";
 const TABS = [
   { to: "/", label: "Home", icon: Home },
   { to: "/inbox", label: "Inbox", icon: Inbox, countKey: "inbox" as CountKey },
-  { to: "/crm", label: "CRM", icon: Database },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone, action: true },
 ];
 

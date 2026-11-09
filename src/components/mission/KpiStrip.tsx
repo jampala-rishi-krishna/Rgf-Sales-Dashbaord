@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { CalendarCheck, MessageCircleReply, Percent, Send, ShieldAlert, Users } from "lucide-react";
 import { StatCard } from "@/components/shared";
-import { usePreLeads } from "@/hooks/use-pre-leads";
+import { usePreLeadsCount } from "@/hooks/use-pre-leads";
 import { hasReplied } from "@/lib/channels";
 import { computeNeedsHuman, dailySeries, emailRowTs, isToday, type MissionData } from "./data";
 
 export function KpiStrip({ data }: { data: MissionData }) {
-  const pre = usePreLeads();
+  const pre = usePreLeadsCount();
   const k = useMemo(() => {
     const convs = [...data.convs.whatsapp, ...data.convs.sms, ...data.convs.viber];
     const openerTs = convs.map((c) => c.messages?.find((m) => m.role === "martin")?.ts);
@@ -26,11 +26,10 @@ export function KpiStrip({ data }: { data: MissionData }) {
       (c) => c.meetingScheduled && Date.parse(c.lastUpdated || c.lastMessageAt) >= weekAgo,
     );
     const escalations = computeNeedsHuman(data);
-    const leads = pre.data?.leads ?? [];
 
     return {
-      leads: leads.length,
-      leadsSpark: dailySeries(leads.map((l) => l.createdTime)),
+      leads: pre.data?.total ?? 0,
+      leadsSpark: dailySeries(pre.data?.recent ?? []),
       contactedToday,
       contactedSpark: dailySeries([...openerTs, ...emailTs, ...callTs]),
       repliesToday,
@@ -48,7 +47,7 @@ export function KpiStrip({ data }: { data: MissionData }) {
       className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
     >
       <StatCard
-        label="Leads in CRM"
+        label="Pre-Leads"
         value={k.leads}
         spark={k.leadsSpark}
         color="#226DB4"

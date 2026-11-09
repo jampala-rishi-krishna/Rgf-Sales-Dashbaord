@@ -92,12 +92,6 @@ export async function fetchAllPreLeads(): Promise<PreLead[]> {
   return out;
 }
 
-export async function fetchPreLeadById(id: string): Promise<PreLead | null> {
-  const { json } = await zohoGet(`/crm/v8/Pre_Leads/${encodeURIComponent(id)}`);
-  const r = (json.data ?? [])[0] as Record<string, unknown> | undefined;
-  return r ? normalizePreLead(r) : null;
-}
-
 /** n8n base + auth helper shared by the CRM routes. */
 export function n8nConfig() {
   const base = (process.env.N8N_BASE || process.env.N8N_WEBHOOK_BASE_URL || "").replace(/\/$/, "");

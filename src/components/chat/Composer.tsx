@@ -1,8 +1,11 @@
 import { useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { SendHorizontal } from "lucide-react";
 import { DisabledReason } from "@/components/shared";
 import { useMe } from "@/hooks/use-me";
 import { postAction } from "@/lib/action-client";
+import type { Feed } from "@/hooks/use-feeds";
+import type { ChatMessage, Conversation } from "@/lib/channels";
 import { cn } from "@/lib/utils";
 import type { ChatVariant } from "./utils";
 
@@ -13,6 +16,17 @@ function useManualReplyFlag() {
   const me = useMe() as unknown as MeLike & { data?: MeLike };
   return !!(me?.flags?.manualReply ?? me?.data?.flags?.manualReply);
 }
+
+const FEED_KEY: Record<ChatVariant, string> = {
+  whatsapp: "whatsapp-conversations",
+  sms: "sms-conversations",
+  viber: "viber-conversations",
+};
+
+// Unsent drafts survive switching threads (the composer remounts per conversation).
+const drafts = new Map<string, string>();
+
+type ReplyData = { message?: Partial<ChatMessage> };
 
 export function Composer({
   channel,
@@ -26,20 +40,63 @@ export function Composer({
   footnote?: ReactNode;
 }) {
   const enabled = useManualReplyFlag();
-  const [text, setText] = useState("");
+  const qc = useQueryClient();
+  const draftKey = `${channel}:${phone}`;
+  const [text, setTextState] = useState(() => drafts.get(draftKey) ?? "");
   const [sending, setSending] = useState(false);
   const canSend = enabled && !sending && text.trim().length > 0;
 
+  function setText(next: string | ((cur: string) => string)) {
+    setTextState((cur) => {
+      const v = typeof next === "function" ? next(cur) : next;
+      if (v) drafts.set(draftKey, v);
+      else drafts.delete(draftKey);
+      return v;
+    });
+  }
+
   async function send() {
     if (!canSend) return;
+    const sent = text.trim();
     setSending(true);
-    const r = await postAction(
+    const r = await postAction<ReplyData>(
       "/api/actions/reply",
-      { channel, phone, text: text.trim() },
+      { channel, phone, text: sent },
       "Reply sent",
     );
     setSending(false);
-    if (r.ok) setText("");
+    if (!r.ok) return;
+    // Keep anything typed while the send was in flight.
+    setText((cur) => (cur.trim() === sent ? "" : cur));
+    if (r.dryRun) return;
+    // Show the rep's message immediately instead of waiting for the next poll, then
+    // reconcile with the server copy (which also picks up any reply Martin sent meanwhile).
+    const m = r.data?.message;
+    const msg: ChatMessage = {
+      role: "human",
+      content: m?.content ?? sent,
+      ts: m?.ts ?? new Date().toISOString(),
+      agentName: m?.agentName,
+    };
+    const key = [FEED_KEY[channel]];
+    qc.setQueryData<Feed<Conversation>>(key, (feed) =>
+      feed
+        ? {
+            ...feed,
+            items: feed.items.map((c) =>
+              c.phone === phone
+                ? {
+                    ...c,
+                    messages: [...c.messages, msg],
+                    lastMessageAt: msg.ts,
+                    lastMessagePreview: msg.content,
+                  }
+                : c,
+            ),
+          }
+        : feed,
+    );
+    void qc.invalidateQueries({ queryKey: key });
   }
 
   const placeholder =
@@ -71,7 +128,7 @@ export function Composer({
                 void send();
               }
             }}
-            disabled={!enabled || sending}
+            disabled={!enabled}
             rows={1}
             aria-label="Reply message"
             placeholder={enabled ? placeholder : "Manual replies are not enabled"}
