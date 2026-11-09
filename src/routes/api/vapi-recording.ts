@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { pickRecordingUrl } from "@/lib/vapi.server";
+import { recordingCandidates } from "@/lib/vapi.server";
 
 const err = (error: string, status: number) =>
   new Response(JSON.stringify({ error }), {
@@ -25,10 +25,22 @@ export const Route = createFileRoute("/api/vapi-recording")({
             signal: AbortSignal.timeout(20_000),
           });
           if (!callRes.ok) return err(`Vapi call lookup failed: ${callRes.status}`, callRes.status);
-          const recUrl = pickRecordingUrl(await callRes.json(), prefer);
-          if (!recUrl) return err("No recording for this call", 404);
-          const audio = await fetch(recUrl, { signal: AbortSignal.timeout(60_000) });
-          if (!audio.ok || !audio.body) return err(`Recording fetch failed: ${audio.status}`, 502);
+          const urls = recordingCandidates(await callRes.json(), prefer);
+          if (!urls.length) return err("No recording for this call", 404);
+          let audio: Response | null = null;
+          const tried: string[] = [];
+          for (const u of urls) {
+            const r = await fetch(u, { signal: AbortSignal.timeout(60_000) }).catch(() => null);
+            if (r?.ok && r.body) {
+              audio = r;
+              break;
+            }
+            tried.push(`${new URL(u).hostname}:${r?.status ?? "network"}`);
+          }
+          if (!audio) {
+            console.warn(`[vapi-recording] call=${callId} no playable URL (${tried.join(", ")})`);
+            return err("Recording is not available yet", 502);
+          }
           const headers = new Headers({
             "Content-Type": audio.headers.get("content-type") ?? "audio/wav",
             "Cache-Control": "private, max-age=3600",

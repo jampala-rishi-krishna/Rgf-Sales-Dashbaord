@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MARA_ASSISTANT_ID, mergeCalls, pickRecordingUrl, vapiAssistantIds } from "./vapi.server";
+import {
+  MARA_ASSISTANT_ID,
+  mergeCalls,
+  pickRecordingUrl,
+  recordingCandidates,
+  vapiAssistantIds,
+} from "./vapi.server";
 
 describe("vapiAssistantIds", () => {
   it("always includes Mara and splits a comma list", () => {
@@ -10,15 +16,46 @@ describe("vapiAssistantIds", () => {
 });
 
 describe("pickRecordingUrl", () => {
+  const u = (x: string) => `https://storage.vapi.ai/${x}.wav`;
   it("prefers the newest stereo field, then falls back", () => {
     expect(
-      pickRecordingUrl({ artifact: { recording: { stereoUrl: "s", mono: { combinedUrl: "m" } } } }),
-    ).toBe("s");
-    expect(pickRecordingUrl({ artifact: { recordingUrl: "r" } })).toBe("r");
-    expect(pickRecordingUrl({ stereoRecordingUrl: "old" })).toBe("old");
-    expect(pickRecordingUrl({ recordingUrl: "m", stereoRecordingUrl: "s" }, "mono")).toBe("m");
+      pickRecordingUrl({
+        artifact: { recording: { stereoUrl: u("s"), mono: { combinedUrl: u("m") } } },
+      }),
+    ).toBe(u("s"));
+    expect(pickRecordingUrl({ artifact: { recordingUrl: u("r") } })).toBe(u("r"));
+    expect(pickRecordingUrl({ stereoRecordingUrl: u("old") })).toBe(u("old"));
+    expect(pickRecordingUrl({ recordingUrl: u("m"), stereoRecordingUrl: u("s") }, "mono")).toBe(
+      u("m"),
+    );
     expect(pickRecordingUrl({})).toBeUndefined();
     expect(pickRecordingUrl(null)).toBeUndefined();
+  });
+});
+
+describe("recordingCandidates", () => {
+  it("puts presigned (private storage) URLs first, then plain ones, deduped", () => {
+    const call = {
+      recordingUrl: "https://storage/plain.wav",
+      artifact: {
+        recording: {
+          stereoUrl: "https://storage/stereo.wav",
+          mono: {
+            combinedUrl: "https://storage/plain.wav",
+            presignedMonoUrl: "https://r2/mono?sig",
+          },
+        },
+        presignedStereoUrl: "https://r2/stereo?sig",
+      },
+    };
+    expect(recordingCandidates(call)).toEqual([
+      "https://r2/stereo?sig",
+      "https://r2/mono?sig",
+      "https://storage/stereo.wav",
+      "https://storage/plain.wav",
+    ]);
+    expect(recordingCandidates(call, "mono")[0]).toBe("https://r2/mono?sig");
+    expect(recordingCandidates({ recordingUrl: "not-a-url" })).toEqual([]);
   });
 });
 

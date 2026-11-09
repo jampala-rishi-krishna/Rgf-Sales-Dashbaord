@@ -15,23 +15,49 @@ export function vapiAssistantIds(env = process.env.VAPI_ASSISTANT_ID): string[] 
 type Rec = Record<string, unknown>;
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
 
-/** Best recording URL on a Vapi call object (newest field names first; stereo preferred). */
-export function pickRecordingUrl(
-  call: unknown,
-  prefer: "stereo" | "mono" = "stereo",
-): string | undefined {
+/** First string value for `key` anywhere inside `obj` (Vapi nests presigned URLs). */
+function findKeyDeep(
+  obj: unknown,
+  test: (k: string) => boolean,
+  seen = new Set<object>(),
+): string[] {
+  const out: string[] = [];
+  if (!obj || typeof obj !== "object" || seen.has(obj as object)) return out;
+  seen.add(obj as object);
+  for (const [k, v] of Object.entries(obj as Rec)) {
+    if (typeof v === "string" && v.trim() && test(k)) out.push(v.trim());
+    else if (v && typeof v === "object") out.push(...findKeyDeep(v, test, seen));
+  }
+  return out;
+}
+
+/**
+ * Recording URLs to try, best first. Private (HIPAA) storage only serves the presigned
+ * URLs, so those come first; then the plain fields (stereo or mono preferred).
+ */
+export function recordingCandidates(call: unknown, prefer: "stereo" | "mono" = "stereo"): string[] {
   const c = (call ?? {}) as Rec;
   const a = (c.artifact ?? {}) as Rec;
   const rec = (a.recording ?? {}) as Rec;
   const mono = (rec.mono ?? {}) as Rec;
-  const stereo = [rec.stereoUrl, a.stereoRecordingUrl, c.stereoRecordingUrl];
-  const single = [mono.combinedUrl, a.recordingUrl, c.recordingUrl];
-  const order = prefer === "stereo" ? [...stereo, ...single] : [...single, ...stereo];
-  for (const v of order) {
-    const s = str(v);
-    if (s) return s;
-  }
-  return undefined;
+  const presStereo = findKeyDeep(c, (k) => /^presigned.*stereo.*url$/i.test(k));
+  const presMono = findKeyDeep(c, (k) => /^presigned.*(mono|combined).*url$/i.test(k));
+  const presAny = findKeyDeep(c, (k) => /^presigned.*url$/i.test(k));
+  const stereo = [rec.stereoUrl, a.stereoRecordingUrl, c.stereoRecordingUrl].map(str);
+  const single = [mono.combinedUrl, a.recordingUrl, c.recordingUrl].map(str);
+  const ordered =
+    prefer === "stereo"
+      ? [...presStereo, ...presMono, ...presAny, ...stereo, ...single]
+      : [...presMono, ...presStereo, ...presAny, ...single, ...stereo];
+  return Array.from(new Set(ordered.filter((u): u is string => !!u && /^https?:\/\//.test(u))));
+}
+
+/** Best recording URL on a Vapi call object. */
+export function pickRecordingUrl(
+  call: unknown,
+  prefer: "stereo" | "mono" = "stereo",
+): string | undefined {
+  return recordingCandidates(call, prefer)[0];
 }
 
 /** Merge call lists from several assistants: dedupe by id, newest first, cap at `limit`. */
