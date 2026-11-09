@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { AlertCircle, Eye, EyeOff, Info, Loader2 } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Info, Loader2, Sparkles } from "lucide-react";
 import { Logo } from "@/lib/brand";
 import { useMe } from "@/hooks/use-me";
 
@@ -41,82 +41,28 @@ const SSO_ERRORS: Record<string, string> = {
 const ssoError = (code?: string) =>
   code ? (SSO_ERRORS[code] ?? "Google sign-in failed. Please try again.") : "";
 
-/* ── Left panel: abstract, blurred Mission Control silhouette (no real data) ── */
-function DashboardSilhouette() {
-  const bar = "rounded bg-white";
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 flex items-center justify-center"
-    >
-      <div className="flex h-[78%] w-[118%] -rotate-[4deg] gap-4 rounded-2xl bg-white/[0.06] p-5 opacity-[0.22] ring-1 ring-white/30 blur-[2px]">
-        {/* sidebar */}
-        <div className="flex w-[14%] flex-col gap-3">
-          <div className={`${bar} h-6 w-3/4`} />
-          {Array.from({ length: 7 }, (_, i) => (
-            <div
-              key={i}
-              className={`${bar} h-3 opacity-60`}
-              style={{ width: `${60 + ((i * 17) % 35)}%` }}
-            />
-          ))}
-        </div>
-        <div className="flex flex-1 flex-col gap-4">
-          {/* top bar */}
-          <div className="flex items-center justify-between">
-            <div className={`${bar} h-4 w-1/4`} />
-            <div className={`${bar} h-6 w-6 rounded-full`} />
-          </div>
-          {/* KPI tiles */}
-          <div className="grid grid-cols-4 gap-3">
-            {Array.from({ length: 4 }, (_, i) => (
-              <div
-                key={i}
-                className="flex h-20 flex-col justify-between rounded-xl bg-white/25 p-3"
-              >
-                <div className={`${bar} h-2.5 w-1/2 opacity-70`} />
-                <div className={`${bar} h-5 w-2/3`} />
-              </div>
-            ))}
-          </div>
-          {/* chart + list */}
-          <div className="grid flex-1 grid-cols-3 gap-3">
-            <div className="col-span-2 flex items-end gap-2 rounded-xl bg-white/20 p-4">
-              {[40, 62, 48, 75, 58, 82, 66, 90, 72, 86, 64, 78].map((h, i) => (
-                <div key={i} className="flex-1 rounded-t bg-white" style={{ height: `${h}%` }} />
-              ))}
-            </div>
-            <div className="flex flex-col gap-2.5 rounded-xl bg-white/20 p-4">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className={`${bar} h-5 w-5 rounded-full`} />
-                  <div className={`${bar} h-2.5 flex-1 opacity-70`} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function BrandPanel() {
+  const heroImage =
+    "https://www.rareglobalfood.com/_next/image?url=%2Fimages%2Fhero%2FRare-Website-Mockup-12.avif&w=640&q=75&dpl=dpl_F6Q85gsofgJLfxaGqYLpXQg2BwP";
+
   return (
     <aside
       className="relative hidden overflow-hidden lg:flex lg:items-end lg:p-14 xl:p-16"
       style={{
-        background: "linear-gradient(150deg, #7F1820 0%, #66111A 50%, #430B10 100%)",
+        backgroundColor: "#430B10",
       }}
     >
-      <DashboardSilhouette />
-      {/* dark-red overlay keeps the silhouette as texture, not content */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url("${heroImage}")` }}
+      />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, rgba(67,11,16,.35) 0%, rgba(67,11,16,.55) 55%, rgba(48,7,11,.92) 100%)",
+            "linear-gradient(180deg, rgba(48,7,11,.32) 0%, rgba(48,7,11,.4) 45%, rgba(48,7,11,.88) 100%)",
         }}
       />
       <div
@@ -127,15 +73,23 @@ function BrandPanel() {
           backgroundSize: "18px 18px",
         }}
       />
-      <div className="relative max-w-md text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
-          RGF Sales Operations
+      <div className="absolute left-8 top-8 z-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-white/90 backdrop-blur-sm lg:left-14 lg:top-12 xl:left-16">
+        <Sparkles aria-hidden className="h-4 w-4 text-[#F2C98C]" />
+        AI-powered Sales Dashboard
+      </div>
+      <div className="relative z-10 max-w-md text-white">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F2C98C]">
+          From trusted sourcing to lasting partnerships
         </p>
-        <h1 className="mt-3 text-[36px] font-semibold leading-[1.15] tracking-tight">
-          Sales operations, in one place.
-        </h1>
+        <h2 className="mt-3 text-[36px] font-semibold leading-[1.15] tracking-tight">
+          Great food. Stronger connections.
+        </h2>
         <p className="mt-3 text-base leading-relaxed text-white/80">
-          Leads, conversations and campaigns for the Rare Global Food sales team.
+          One place to manage leads, customer conversations and campaigns across our global food
+          trading business.
+        </p>
+        <p className="mt-6 text-xs font-medium tracking-wide text-white/60">
+          QUALITY SOURCED <span aria-hidden>·</span> GLOBALLY CONNECTED
         </p>
       </div>
     </aside>
@@ -228,26 +182,48 @@ function LoginPage() {
   const canSubmit = !!email.trim() && !!password && !busy;
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2" style={{ backgroundColor: "#FFF8F0" }}>
+    <div
+      className="grid min-h-screen lg:grid-cols-[1.04fr_0.96fr]"
+      style={{ backgroundColor: "#FFF8F0" }}
+    >
       <BrandPanel />
 
-      <main className="flex min-h-screen flex-col px-4 sm:px-6">
-        <div className="flex flex-1 items-center justify-center py-10">
+      <main className="flex min-h-screen flex-col px-4 sm:px-8">
+        <header className="flex justify-center pt-8 sm:pt-10">
+          <div className="flex items-center gap-4">
+            <Logo className="shrink-0" />
+            <span aria-hidden className="h-10 w-px bg-[#DED6CC]" />
+            <div>
+              <h1 className="text-sm font-bold leading-snug text-[#1B2419] sm:text-base">
+                Rare Global Food Trading Corp.
+              </h1>
+              <p className="mt-0.5 text-xs tracking-wide text-[#6B6F68]">
+                <span className="lg:hidden">AI-powered Sales Dashboard</span>
+                <span className="hidden lg:inline">SALES OPERATIONS</span>
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex flex-1 items-center justify-center py-8 sm:py-10">
           <div
-            className="w-full max-w-[420px] rounded-[14px] border bg-white p-6 sm:p-8"
+            className="w-full max-w-[420px] rounded-2xl border bg-white p-6 sm:p-9"
             style={{
               borderColor: "#EDE6DC",
-              boxShadow: "0 1px 2px rgba(27,36,25,.06),0 8px 24px rgba(27,36,25,.06)",
+              boxShadow: "0 2px 6px rgba(27,36,25,.04),0 18px 48px rgba(72,40,23,.09)",
             }}
           >
-            <div className="mb-6 flex justify-center">
-              <Logo className="scale-110" />
-            </div>
-            <h2 className="text-center text-xl font-semibold sm:text-2xl" style={{ color: INK }}>
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#86000B]">
+              Welcome back
+            </p>
+            <h2
+              className="mt-2 text-center text-xl font-semibold sm:text-2xl"
+              style={{ color: INK }}
+            >
               Sign in
             </h2>
             <p className="mt-1 text-center text-sm" style={{ color: MUTED }}>
-              RGF sales dashboard
+              Access your RGF sales workspace
             </p>
 
             {search.reason === "idle" && (
