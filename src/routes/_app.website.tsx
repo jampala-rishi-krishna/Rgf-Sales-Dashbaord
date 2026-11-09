@@ -6,6 +6,7 @@ import { useWebsiteFeed } from "@/hooks/use-feeds";
 import { formatManila } from "@/lib/channels";
 import { ChatThread, ReplyComposer } from "@/components/website/chat-thread";
 import { VisitorPanel } from "@/components/website/visitor-panel";
+import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
 import {
   initials,
   location,
@@ -198,8 +199,22 @@ function WebsiteTab() {
                     "Website visitor"}
                 </div>
               </div>
+              <ConvertedBadge
+                subject={{ phone: active.visitorPhone, email: active.visitorEmail }}
+                className="hidden sm:inline-flex"
+              />
+              <ConvertLeadButton
+                tone="dark"
+                subject={{
+                  name: active.visitorName,
+                  company: active.businessType,
+                  phone: active.visitorPhone,
+                  email: active.visitorEmail,
+                  channelSegment: active.businessSegment,
+                }}
+              />
               <span
-                className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${active.status === "escalated" ? "bg-white text-[#86000B]" : "bg-white/15 text-white"}`}
+                className={`hidden shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold sm:inline ${active.status === "escalated" ? "bg-white text-[#86000B]" : "bg-white/15 text-white"}`}
               >
                 {statusMeta(active.status).label}
               </span>

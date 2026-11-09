@@ -5,8 +5,10 @@ import { PhoneOff, Search } from "lucide-react";
 import { ChannelGlyph } from "@/components/shared";
 import { CallCard } from "@/components/calls/call-card";
 import { CallDetail } from "@/components/calls/call-detail";
+import { CallDetailBoundary } from "@/components/calls/call-detail-boundary";
 import { LiveCallBanner } from "@/components/calls/live-call-banner";
 import {
+  asText,
   callLead,
   callOutcome,
   toCallArray,
@@ -85,7 +87,7 @@ function CallsTab() {
       if (filter !== "All" && callOutcome(c) !== filter) return false;
       if (!q) return true;
       const l = callLead(c);
-      return [c.customer?.number, c.id, c.status, l.companyName, l.leadName].some((v) =>
+      return [l.phone, c.id, asText(c.status), l.companyName, l.leadName].some((v) =>
         (v ?? "").toLowerCase().includes(q),
       );
     });
@@ -211,7 +213,9 @@ function CallsTab() {
         {/* Detail */}
         <section className={`min-h-0 ${sel ? "block" : "hidden md:block"}`}>
           {sel ? (
-            <CallDetail key={sel.id} call={sel} onBack={() => setSelId(null)} />
+            <CallDetailBoundary callId={sel.id} onBack={() => setSelId(null)}>
+              <CallDetail key={sel.id} call={sel} onBack={() => setSelId(null)} />
+            </CallDetailBoundary>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-[var(--ch-text-2)]">
               <div className="grid size-16 place-items-center rounded-full bg-white/5">

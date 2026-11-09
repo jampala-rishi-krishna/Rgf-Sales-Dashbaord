@@ -16,6 +16,8 @@ import {
   type GmailMessage,
   type GmailThreadSummary,
 } from "./types";
+import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
+import { emailSubject } from "@/components/convert/subjects";
 
 const IFRAME_BASE_CSS = `<base target="_blank"><style>html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1F1F1F;overflow:hidden;word-wrap:break-word}img{max-width:100%;height:auto}pre{white-space:pre-wrap}a{color:#0B57D0}</style>`;
 
@@ -323,6 +325,7 @@ export function ThreadView({
     staleTime: 30_000,
   });
   const messages = data ?? [];
+  const subject = emailSubject(thread);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [composer, setComposer] = useState<ComposerMode | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -373,6 +376,12 @@ export function ThreadView({
         >
           <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
         </button>
+        {subject && (
+          <div className="ml-auto flex items-center gap-2">
+            <ConvertedBadge subject={subject} className="hidden sm:inline-flex" />
+            <ConvertLeadButton subject={subject} />
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-10">
         <div className="flex items-start gap-3 pt-5 pb-3 md:pl-[52px]">

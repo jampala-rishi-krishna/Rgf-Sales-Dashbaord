@@ -14,7 +14,8 @@ import {
 import { ChannelGlyph } from "@/components/shared";
 import { useTheme } from "@/hooks/use-theme";
 import type { ChannelKey, Conversation } from "@/lib/channels";
-import { NAV } from "./nav";
+import { useMe } from "@/hooks/use-me";
+import { visibleNav } from "./nav";
 
 const LEAD_CAP = 250; // per channel; cmdk filters client-side
 
@@ -32,6 +33,7 @@ export function CommandPalette({
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
 
+  const nav = visibleNav(useMe().data?.flags);
   const leads = useMemo(() => {
     const out: { channel: ChannelKey; phone: string; company: string; name: string }[] = [];
     for (const ch of ["whatsapp", "viber", "sms"] as const) {
@@ -62,12 +64,14 @@ export function CommandPalette({
       <CommandList className="max-h-[min(420px,60vh)]">
         <CommandEmpty>No matches.</CommandEmpty>
         <CommandGroup heading="Go to">
-          {NAV.filter((n) => !(wall && n.action)).map((n) => (
-            <CommandItem key={n.to} value={`go ${n.label}`} onSelect={() => go(n.to)}>
-              {n.channel ? <ChannelGlyph channel={n.channel} /> : n.icon ? <n.icon /> : null}
-              {n.label}
-            </CommandItem>
-          ))}
+          {nav
+            .filter((n) => !(wall && n.action))
+            .map((n) => (
+              <CommandItem key={n.to} value={`go ${n.label}`} onSelect={() => go(n.to)}>
+                {n.channel ? <ChannelGlyph channel={n.channel} /> : n.icon ? <n.icon /> : null}
+                {n.label}
+              </CommandItem>
+            ))}
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Actions">

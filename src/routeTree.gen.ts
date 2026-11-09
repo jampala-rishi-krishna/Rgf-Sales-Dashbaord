@@ -16,6 +16,7 @@ import { Route as AppCallsRouteImport } from './routes/_app.calls'
 import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppEmailRouteImport } from './routes/_app.email'
 import { Route as AppInboxRouteImport } from './routes/_app.inbox'
+import { Route as AppLeadsRouteImport } from './routes/_app.leads'
 import { Route as AppSmsRouteImport } from './routes/_app.sms'
 import { Route as AppViberRouteImport } from './routes/_app.viber'
 import { Route as AppWebsiteRouteImport } from './routes/_app.website'
@@ -37,12 +38,15 @@ import { Route as ApiWebsiteChatSessionsRouteImport } from './routes/api/website
 import { Route as ApiWhatsappConversationsRouteImport } from './routes/api/whatsapp-conversations'
 import { Route as ApiActionsBulkRouteImport } from './routes/api/actions/bulk'
 import { Route as ApiActionsCallRouteImport } from './routes/api/actions/call'
+import { Route as ApiActionsConvertLeadRouteImport } from './routes/api/actions/convert-lead'
 import { Route as ApiActionsOpenerRouteImport } from './routes/api/actions/opener'
 import { Route as ApiActionsReplyRouteImport } from './routes/api/actions/reply'
 import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiCrmLeadsRouteImport } from './routes/api/crm/leads'
+import { Route as ApiCrmOwnersRouteImport } from './routes/api/crm/owners'
 import { Route as ApiCrmPreLeadsRouteImport } from './routes/api/crm/pre-leads'
 import { Route as ApiCrmPreLeadsCountRouteImport } from './routes/api/crm/pre-leads-count'
 import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
@@ -79,6 +83,11 @@ const AppEmailRoute = AppEmailRouteImport.update({
 const AppInboxRoute = AppInboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeadsRoute = AppLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSmsRoute = AppSmsRouteImport.update({
@@ -187,6 +196,11 @@ const ApiActionsCallRoute = ApiActionsCallRouteImport.update({
   path: '/api/actions/call',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiActionsConvertLeadRoute = ApiActionsConvertLeadRouteImport.update({
+  id: '/api/actions/convert-lead',
+  path: '/api/actions/convert-lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiActionsOpenerRoute = ApiActionsOpenerRouteImport.update({
   id: '/api/actions/opener',
   path: '/api/actions/opener',
@@ -217,6 +231,16 @@ const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
   path: '/api/auth/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCrmLeadsRoute = ApiCrmLeadsRouteImport.update({
+  id: '/api/crm/leads',
+  path: '/api/crm/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCrmOwnersRoute = ApiCrmOwnersRouteImport.update({
+  id: '/api/crm/owners',
+  path: '/api/crm/owners',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCrmPreLeadsRoute = ApiCrmPreLeadsRouteImport.update({
   id: '/api/crm/pre-leads',
   path: '/api/crm/pre-leads',
@@ -240,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/campaigns': typeof AppCampaignsRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
+  '/leads': typeof AppLeadsRoute
   '/sms': typeof AppSmsRoute
   '/viber': typeof AppViberRoute
   '/website': typeof AppWebsiteRoute
@@ -261,12 +286,15 @@ export interface FileRoutesByFullPath {
   '/api/whatsapp-conversations': typeof ApiWhatsappConversationsRoute
   '/api/actions/bulk': typeof ApiActionsBulkRoute
   '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/convert-lead': typeof ApiActionsConvertLeadRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/leads': typeof ApiCrmLeadsRoute
+  '/api/crm/owners': typeof ApiCrmOwnersRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -277,6 +305,7 @@ export interface FileRoutesByTo {
   '/campaigns': typeof AppCampaignsRoute
   '/email': typeof AppEmailRoute
   '/inbox': typeof AppInboxRoute
+  '/leads': typeof AppLeadsRoute
   '/sms': typeof AppSmsRoute
   '/viber': typeof AppViberRoute
   '/website': typeof AppWebsiteRoute
@@ -299,12 +328,15 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/api/actions/bulk': typeof ApiActionsBulkRoute
   '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/convert-lead': typeof ApiActionsConvertLeadRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/leads': typeof ApiCrmLeadsRoute
+  '/api/crm/owners': typeof ApiCrmOwnersRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -317,6 +349,7 @@ export interface FileRoutesById {
   '/_app/campaigns': typeof AppCampaignsRoute
   '/_app/email': typeof AppEmailRoute
   '/_app/inbox': typeof AppInboxRoute
+  '/_app/leads': typeof AppLeadsRoute
   '/_app/sms': typeof AppSmsRoute
   '/_app/viber': typeof AppViberRoute
   '/_app/website': typeof AppWebsiteRoute
@@ -339,12 +372,15 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/api/actions/bulk': typeof ApiActionsBulkRoute
   '/api/actions/call': typeof ApiActionsCallRoute
+  '/api/actions/convert-lead': typeof ApiActionsConvertLeadRoute
   '/api/actions/opener': typeof ApiActionsOpenerRoute
   '/api/actions/reply': typeof ApiActionsReplyRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/crm/leads': typeof ApiCrmLeadsRoute
+  '/api/crm/owners': typeof ApiCrmOwnersRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -358,6 +394,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/email'
     | '/inbox'
+    | '/leads'
     | '/sms'
     | '/viber'
     | '/website'
@@ -379,12 +416,15 @@ export interface FileRouteTypes {
     | '/api/whatsapp-conversations'
     | '/api/actions/bulk'
     | '/api/actions/call'
+    | '/api/actions/convert-lead'
     | '/api/actions/opener'
     | '/api/actions/reply'
     | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/crm/leads'
+    | '/api/crm/owners'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
     | '/api/auth/google/callback'
@@ -395,6 +435,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/email'
     | '/inbox'
+    | '/leads'
     | '/sms'
     | '/viber'
     | '/website'
@@ -417,12 +458,15 @@ export interface FileRouteTypes {
     | '/'
     | '/api/actions/bulk'
     | '/api/actions/call'
+    | '/api/actions/convert-lead'
     | '/api/actions/opener'
     | '/api/actions/reply'
     | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/crm/leads'
+    | '/api/crm/owners'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
     | '/api/auth/google/callback'
@@ -434,6 +478,7 @@ export interface FileRouteTypes {
     | '/_app/campaigns'
     | '/_app/email'
     | '/_app/inbox'
+    | '/_app/leads'
     | '/_app/sms'
     | '/_app/viber'
     | '/_app/website'
@@ -456,12 +501,15 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/api/actions/bulk'
     | '/api/actions/call'
+    | '/api/actions/convert-lead'
     | '/api/actions/opener'
     | '/api/actions/reply'
     | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/crm/leads'
+    | '/api/crm/owners'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
     | '/api/auth/google/callback'
@@ -487,12 +535,15 @@ export interface RootRouteChildren {
   ApiWhatsappConversationsRoute: typeof ApiWhatsappConversationsRoute
   ApiActionsBulkRoute: typeof ApiActionsBulkRoute
   ApiActionsCallRoute: typeof ApiActionsCallRoute
+  ApiActionsConvertLeadRoute: typeof ApiActionsConvertLeadRoute
   ApiActionsOpenerRoute: typeof ApiActionsOpenerRoute
   ApiActionsReplyRoute: typeof ApiActionsReplyRoute
   ApiAuthGoogleRoute: typeof ApiAuthGoogleRouteWithChildren
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiCrmLeadsRoute: typeof ApiCrmLeadsRoute
+  ApiCrmOwnersRoute: typeof ApiCrmOwnersRoute
   ApiCrmPreLeadsRoute: typeof ApiCrmPreLeadsRoute
   ApiCrmPreLeadsCountRoute: typeof ApiCrmPreLeadsCountRoute
 }
@@ -546,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/inbox'
       fullPath: '/inbox'
       preLoaderRoute: typeof AppInboxRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/leads': {
+      id: '/_app/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof AppLeadsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/sms': {
@@ -695,6 +753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiActionsCallRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/actions/convert-lead': {
+      id: '/api/actions/convert-lead'
+      path: '/api/actions/convert-lead'
+      fullPath: '/api/actions/convert-lead'
+      preLoaderRoute: typeof ApiActionsConvertLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/actions/opener': {
       id: '/api/actions/opener'
       path: '/api/actions/opener'
@@ -737,6 +802,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/crm/leads': {
+      id: '/api/crm/leads'
+      path: '/api/crm/leads'
+      fullPath: '/api/crm/leads'
+      preLoaderRoute: typeof ApiCrmLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/crm/owners': {
+      id: '/api/crm/owners'
+      path: '/api/crm/owners'
+      fullPath: '/api/crm/owners'
+      preLoaderRoute: typeof ApiCrmOwnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/crm/pre-leads': {
       id: '/api/crm/pre-leads'
       path: '/api/crm/pre-leads'
@@ -766,6 +845,7 @@ interface AppRouteChildren {
   AppCampaignsRoute: typeof AppCampaignsRoute
   AppEmailRoute: typeof AppEmailRoute
   AppInboxRoute: typeof AppInboxRoute
+  AppLeadsRoute: typeof AppLeadsRoute
   AppSmsRoute: typeof AppSmsRoute
   AppViberRoute: typeof AppViberRoute
   AppWebsiteRoute: typeof AppWebsiteRoute
@@ -778,6 +858,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCampaignsRoute: AppCampaignsRoute,
   AppEmailRoute: AppEmailRoute,
   AppInboxRoute: AppInboxRoute,
+  AppLeadsRoute: AppLeadsRoute,
   AppSmsRoute: AppSmsRoute,
   AppViberRoute: AppViberRoute,
   AppWebsiteRoute: AppWebsiteRoute,
@@ -819,12 +900,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWhatsappConversationsRoute: ApiWhatsappConversationsRoute,
   ApiActionsBulkRoute: ApiActionsBulkRoute,
   ApiActionsCallRoute: ApiActionsCallRoute,
+  ApiActionsConvertLeadRoute: ApiActionsConvertLeadRoute,
   ApiActionsOpenerRoute: ApiActionsOpenerRoute,
   ApiActionsReplyRoute: ApiActionsReplyRoute,
   ApiAuthGoogleRoute: ApiAuthGoogleRouteWithChildren,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiCrmLeadsRoute: ApiCrmLeadsRoute,
+  ApiCrmOwnersRoute: ApiCrmOwnersRoute,
   ApiCrmPreLeadsRoute: ApiCrmPreLeadsRoute,
   ApiCrmPreLeadsCountRoute: ApiCrmPreLeadsCountRoute,
 }

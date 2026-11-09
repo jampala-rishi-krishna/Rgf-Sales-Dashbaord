@@ -3,6 +3,8 @@ import { ArrowLeft, Info } from "lucide-react";
 import type { Conversation } from "@/lib/channels";
 import { formatManila } from "@/lib/channels";
 import { cn } from "@/lib/utils";
+import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
+import { conversationSubject } from "@/components/convert/subjects";
 import { InitialsAvatar } from "./ConversationList";
 import { displayName, type ChatVariant } from "./utils";
 
@@ -23,6 +25,7 @@ export function ConversationHeader({
   chips,
 }: ConversationHeaderProps) {
   const name = displayName(c);
+  const subject = conversationSubject(c);
   const sub = [
     c.leadName && c.companyName ? c.companyName : null,
     c.phone !== name ? c.phone : null,
@@ -52,8 +55,11 @@ export function ConversationHeader({
       >
         <InitialsAvatar name={name} size={40} />
         <div className="min-w-0">
-          <div className="truncate text-[16px] font-medium text-[var(--ch-text,#111b21)]">
-            {name}
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate text-[16px] font-medium text-[var(--ch-text,#111b21)]">
+              {name}
+            </span>
+            <ConvertedBadge subject={subject} className="hidden sm:inline-flex" />
           </div>
           <div className="truncate text-[12.5px] text-[var(--ch-text-2,#667781)]">
             {sub || `Last active ${formatManila(c.lastMessageAt)}`}
@@ -61,6 +67,7 @@ export function ConversationHeader({
         </div>
       </button>
       {chips && <div className="hidden shrink-0 items-center gap-1.5 sm:flex">{chips}</div>}
+      <ConvertLeadButton subject={subject} />
       <button
         onClick={onInfo}
         className="rounded-full p-2 text-[var(--ch-text-2,#54656f)] hover:bg-black/5"

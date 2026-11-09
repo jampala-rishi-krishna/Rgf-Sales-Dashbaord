@@ -3,7 +3,8 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { ChannelGlyph, ChannelDot } from "@/components/shared";
 import { Logo, LogoMark } from "@/lib/brand";
 import { cn } from "@/lib/utils";
-import { NAV, isActive, type CountKey } from "./nav";
+import { useMe } from "@/hooks/use-me";
+import { isActive, visibleNav, type CountKey } from "./nav";
 
 export function Sidebar({
   pathname,
@@ -18,7 +19,8 @@ export function Sidebar({
   counts: Record<CountKey, number>;
   wall?: boolean;
 }) {
-  const items = wall ? NAV.filter((n) => !n.action) : NAV;
+  const nav = visibleNav(useMe().data?.flags);
+  const items = wall ? nav.filter((n) => !n.action) : nav;
   return (
     <aside
       className={cn(
