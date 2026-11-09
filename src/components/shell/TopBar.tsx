@@ -1,5 +1,8 @@
-import { LogOut, Moon, Search, Sun } from "lucide-react";
-import type { ReactNode } from "react";
+import { LogOut, Moon, RefreshCw, Search, Sun } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +15,43 @@ import { LiveDot } from "@/components/shared";
 import { useTheme } from "@/hooks/use-theme";
 import { LogoMark } from "@/lib/brand";
 import { formatManila } from "@/lib/channels";
+
+/** Re-fetches every query on the current page (conversations, calls, leads, counts…). */
+function RefreshButton() {
+  const qc = useQueryClient();
+  const router = useRouter();
+  const fetching = useIsFetching();
+  const [busy, setBusy] = useState(false);
+  const spinning = busy || fetching > 0;
+
+  async function refresh() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await router.invalidate();
+      await qc.invalidateQueries({ refetchType: "active" });
+      toast.success("Refreshed", { duration: 1500 });
+    } catch {
+      toast.error("Some data could not be refreshed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void refresh()}
+      disabled={busy}
+      className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-70 sm:px-2.5"
+      aria-label="Refresh data"
+      title="Refresh all data on this page"
+    >
+      <RefreshCw className={`size-[18px] ${spinning ? "animate-spin" : ""}`} aria-hidden />
+      <span className="hidden lg:inline">{busy ? "Refreshing…" : "Refresh"}</span>
+    </button>
+  );
+}
 
 function initials(name: string) {
   return (
@@ -100,6 +140,8 @@ export function TopBar({
           {fresh ? "Live" : "Stale"}
         </span>
         <LiveDot fresh={fresh} className="mx-1 sm:hidden" />
+
+        <RefreshButton />
 
         {notifications}
 
