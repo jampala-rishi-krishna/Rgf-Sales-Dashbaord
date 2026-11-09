@@ -1,6 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Bot, Forward, RefreshCw, Reply, ReplyAll, Star, Trash2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Bot,
+  Forward,
+  Info,
+  RefreshCw,
+  Reply,
+  ReplyAll,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { usePreLeadLookup } from "@/hooks/use-pre-lead-lookup";
 import { EmptyState } from "@/components/shared";
 import { cn } from "@/lib/utils";
 import { RichEditor, type RichEditorHandle } from "./RichEditor";
@@ -18,6 +37,7 @@ import {
 } from "./types";
 import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
 import { emailSubject } from "@/components/convert/subjects";
+import { PreLeadPanel, enrichSubject } from "@/components/convert/PreLeadPanel";
 
 const IFRAME_BASE_CSS = `<base target="_blank"><style>html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1F1F1F;overflow:hidden;word-wrap:break-word}img{max-width:100%;height:auto}pre{white-space:pre-wrap}a{color:#0B57D0}</style>`;
 
@@ -325,7 +345,12 @@ export function ThreadView({
     staleTime: 30_000,
   });
   const messages = data ?? [];
-  const subject = emailSubject(thread);
+  const baseSubject = emailSubject(thread);
+  const lookup = usePreLeadLookup({ email: baseSubject?.email }, !!baseSubject);
+  const subject = baseSubject
+    ? enrichSubject(baseSubject, lookup.data?.found ? lookup.data.lead : null)
+    : null;
+  const [leadOpen, setLeadOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [composer, setComposer] = useState<ComposerMode | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -380,6 +405,15 @@ export function ThreadView({
           <div className="ml-auto flex items-center gap-2">
             <ConvertedBadge subject={subject} className="hidden sm:inline-flex" />
             <ConvertLeadButton subject={subject} />
+            <button
+              type="button"
+              onClick={() => setLeadOpen(true)}
+              aria-label="Lead details"
+              title="Lead details (Zoho Pre-Lead)"
+              className="h-9 w-9 grid place-items-center rounded-full hover:bg-black/5 text-[var(--ch-text-2)]"
+            >
+              <Info className="h-5 w-5" />
+            </button>
           </div>
         )}
       </div>
@@ -481,6 +515,25 @@ export function ThreadView({
         )}
         <div ref={bottomRef} />
       </div>
+      {subject && (
+        <Sheet open={leadOpen} onOpenChange={setLeadOpen}>
+          <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+            <SheetHeader>
+              <SheetTitle className="text-xl">
+                {subject.company || subject.name || subject.email}
+              </SheetTitle>
+              <SheetDescription>
+                {[subject.name !== subject.company ? subject.name : "", subject.email]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="px-4 pb-6">
+              <PreLeadPanel subject={subject} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }

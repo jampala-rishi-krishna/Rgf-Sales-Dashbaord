@@ -48,6 +48,7 @@ import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 import { Route as ApiCrmLeadsRouteImport } from './routes/api/crm/leads'
 import { Route as ApiCrmOwnersRouteImport } from './routes/api/crm/owners'
+import { Route as ApiCrmPreLeadLookupRouteImport } from './routes/api/crm/pre-lead-lookup'
 import { Route as ApiCrmPreLeadsRouteImport } from './routes/api/crm/pre-leads'
 import { Route as ApiCrmPreLeadsCountRouteImport } from './routes/api/crm/pre-leads-count'
 import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
@@ -247,6 +248,11 @@ const ApiCrmOwnersRoute = ApiCrmOwnersRouteImport.update({
   path: '/api/crm/owners',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCrmPreLeadLookupRoute = ApiCrmPreLeadLookupRouteImport.update({
+  id: '/api/crm/pre-lead-lookup',
+  path: '/api/crm/pre-lead-lookup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCrmPreLeadsRoute = ApiCrmPreLeadsRouteImport.update({
   id: '/api/crm/pre-leads',
   path: '/api/crm/pre-leads',
@@ -302,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/crm/leads': typeof ApiCrmLeadsRoute
   '/api/crm/owners': typeof ApiCrmOwnersRoute
+  '/api/crm/pre-lead-lookup': typeof ApiCrmPreLeadLookupRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/crm/leads': typeof ApiCrmLeadsRoute
   '/api/crm/owners': typeof ApiCrmOwnersRoute
+  '/api/crm/pre-lead-lookup': typeof ApiCrmPreLeadLookupRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -390,6 +398,7 @@ export interface FileRoutesById {
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/crm/leads': typeof ApiCrmLeadsRoute
   '/api/crm/owners': typeof ApiCrmOwnersRoute
+  '/api/crm/pre-lead-lookup': typeof ApiCrmPreLeadLookupRoute
   '/api/crm/pre-leads': typeof ApiCrmPreLeadsRoute
   '/api/crm/pre-leads-count': typeof ApiCrmPreLeadsCountRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -435,6 +444,7 @@ export interface FileRouteTypes {
     | '/api/auth/me'
     | '/api/crm/leads'
     | '/api/crm/owners'
+    | '/api/crm/pre-lead-lookup'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
     | '/api/auth/google/callback'
@@ -478,6 +488,7 @@ export interface FileRouteTypes {
     | '/api/auth/me'
     | '/api/crm/leads'
     | '/api/crm/owners'
+    | '/api/crm/pre-lead-lookup'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
     | '/api/auth/google/callback'
@@ -522,6 +533,7 @@ export interface FileRouteTypes {
     | '/api/auth/me'
     | '/api/crm/leads'
     | '/api/crm/owners'
+    | '/api/crm/pre-lead-lookup'
     | '/api/crm/pre-leads'
     | '/api/crm/pre-leads-count'
     | '/api/auth/google/callback'
@@ -557,6 +569,7 @@ export interface RootRouteChildren {
   ApiAuthMeRoute: typeof ApiAuthMeRoute
   ApiCrmLeadsRoute: typeof ApiCrmLeadsRoute
   ApiCrmOwnersRoute: typeof ApiCrmOwnersRoute
+  ApiCrmPreLeadLookupRoute: typeof ApiCrmPreLeadLookupRoute
   ApiCrmPreLeadsRoute: typeof ApiCrmPreLeadsRoute
   ApiCrmPreLeadsCountRoute: typeof ApiCrmPreLeadsCountRoute
 }
@@ -836,6 +849,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCrmOwnersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/crm/pre-lead-lookup': {
+      id: '/api/crm/pre-lead-lookup'
+      path: '/api/crm/pre-lead-lookup'
+      fullPath: '/api/crm/pre-lead-lookup'
+      preLoaderRoute: typeof ApiCrmPreLeadLookupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/crm/pre-leads': {
       id: '/api/crm/pre-leads'
       path: '/api/crm/pre-leads'
@@ -930,6 +950,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthMeRoute: ApiAuthMeRoute,
   ApiCrmLeadsRoute: ApiCrmLeadsRoute,
   ApiCrmOwnersRoute: ApiCrmOwnersRoute,
+  ApiCrmPreLeadLookupRoute: ApiCrmPreLeadLookupRoute,
   ApiCrmPreLeadsRoute: ApiCrmPreLeadsRoute,
   ApiCrmPreLeadsCountRoute: ApiCrmPreLeadsCountRoute,
 }

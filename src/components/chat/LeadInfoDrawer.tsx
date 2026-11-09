@@ -10,8 +10,9 @@ import {
 import { formatManila, hasReplied, type Conversation } from "@/lib/channels";
 import { cn } from "@/lib/utils";
 import { InitialsAvatar } from "./ConversationList";
-import { displayName, zohoLeadUrl } from "./utils";
-import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
+import { displayName } from "./utils";
+import { ConvertedBadge } from "@/components/convert/ConvertLeadButton";
+import { PreLeadPanel } from "@/components/convert/PreLeadPanel";
 import { conversationSubject } from "@/components/convert/subjects";
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -72,7 +73,7 @@ export function LeadInfoDrawer({
                   </span>
                 </div>
               )}
-              <ConvertLeadButton subject={conversationSubject(c)} size="md" full />
+              <PreLeadPanel subject={conversationSubject(c)} />
               {extra}
               <section>
                 <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -125,16 +126,6 @@ export function LeadInfoDrawer({
                     </a>
                   )}
                 </section>
-              )}
-              {c.leadId && (
-                <a
-                  href={zohoLeadUrl(c.leadId)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  Open in Zoho CRM <ExternalLink className="size-4" aria-hidden />
-                </a>
               )}
             </div>
           </>
