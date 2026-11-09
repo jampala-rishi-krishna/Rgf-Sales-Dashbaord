@@ -11,6 +11,9 @@ import {
 } from "@/lib/channels";
 import type { WebsiteSessionLike } from "@/lib/events";
 import { channelHref, timeAgo } from "@/components/mission/data";
+import { ConvertLeadButton } from "@/components/convert/ConvertLeadButton";
+import { conversationSubject } from "@/components/convert/subjects";
+import type { ConvertSubject } from "@/lib/convert-defaults";
 
 export const Route = createFileRoute("/_app/inbox")({
   component: InboxPage,
@@ -26,6 +29,7 @@ type InboxRow = {
   needsHuman: boolean;
   replied: boolean;
   href: string;
+  subject: ConvertSubject;
 };
 
 const CHIPS: ChannelKey[] = ["whatsapp", "sms", "viber", "web"];
@@ -41,6 +45,7 @@ function fromConv(channel: "whatsapp" | "sms" | "viber", c: Conversation): Inbox
     needsHuman: !!c.humanEscalated,
     replied: hasReplied(c),
     href: channelHref(channel, { phone: c.phone }),
+    subject: conversationSubject(c),
   };
 }
 
@@ -56,6 +61,12 @@ function fromSession(s: WebsiteSessionLike): InboxRow {
     needsHuman: s.status === "escalated",
     replied: (s.messages ?? []).some((m) => m.sender === "visitor"),
     href: channelHref("web", { sessionId: s.sessionId }),
+    subject: {
+      name: s.visitorName,
+      company: s.businessType,
+      phone: s.visitorPhone,
+      email: s.visitorEmail,
+    },
   };
 }
 
@@ -157,7 +168,10 @@ function InboxPage() {
                         color: "var(--surface,#fff)",
                         borderColor: "transparent",
                       }
-                    : { borderColor: "var(--border,#EDE6DC)", color: "var(--muted-foreground,#6B6F68)" }
+                    : {
+                        borderColor: "var(--border,#EDE6DC)",
+                        color: "var(--muted-foreground,#6B6F68)",
+                      }
                 }
               >
                 {c !== "all" && <ChannelDot channel={c} />}
@@ -204,11 +218,11 @@ function InboxPage() {
         ) : (
           <ul className="divide-y" style={{ borderColor: "var(--border,#EDE6DC)" }}>
             {visible.map((r) => (
-              <li key={r.id}>
+              <li key={r.id} className="flex items-center gap-2 pr-3 hover:bg-black/[.03]">
                 <button
                   type="button"
                   onClick={() => router.navigate({ href: r.href })}
-                  className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-black/[.03]"
+                  className="flex min-w-0 flex-1 items-start gap-3 py-2.5 pl-3 text-left"
                 >
                   <ChannelBadge channel={r.channel} />
                   <div className="min-w-0 flex-1">
@@ -238,7 +252,10 @@ function InboxPage() {
                         {r.subtitle}
                       </div>
                     )}
-                    <div className="truncate text-xs" style={{ color: "var(--muted-foreground,#6B6F68)" }}>
+                    <div
+                      className="truncate text-xs"
+                      style={{ color: "var(--muted-foreground,#6B6F68)" }}
+                    >
                       {r.preview}
                     </div>
                   </div>
@@ -251,6 +268,7 @@ function InboxPage() {
                     {timeAgo(r.lastAt)}
                   </time>
                 </button>
+                {r.needsHuman && <ConvertLeadButton subject={r.subject} />}
               </li>
             ))}
           </ul>

@@ -19,6 +19,8 @@ export interface ChannelCardProps {
   def: CampaignDef;
   /** Eligible leads sorted oldest-first; null when CRM not connected. */
   eligible: PreLead[] | null;
+  /** Pre-Leads skipped because they are already converted to Zoho Leads. */
+  convertedExcluded?: number;
   isAdmin: boolean;
   dryRun: boolean;
   busy: boolean;
@@ -32,7 +34,15 @@ function parseLimit(raw: string): number | null {
   return n;
 }
 
-export function ChannelCard({ def, eligible, isAdmin, dryRun, busy, onLaunch }: ChannelCardProps) {
+export function ChannelCard({
+  def,
+  eligible,
+  convertedExcluded = 0,
+  isAdmin,
+  dryRun,
+  busy,
+  onLaunch,
+}: ChannelCardProps) {
   const meta = CHANNELS[def.channel];
   const [raw, setRaw] = useState(String(DEFAULT_LIMIT));
   const [sort, setSort] = useState<SortOrder>("asc");
@@ -98,6 +108,11 @@ export function ChannelCard({ def, eligible, isAdmin, dryRun, busy, onLaunch }: 
             {eligible == null ? "—" : eligible.length.toLocaleString()}
           </span>
         </div>
+        {convertedExcluded > 0 && (
+          <p className="-mt-1 text-xs text-[var(--muted-foreground,#6B6F68)]">
+            {convertedExcluded.toLocaleString()} already converted, excluded
+          </p>
+        )}
 
         {def.hasCount ? (
           <div className="space-y-1.5">

@@ -11,6 +11,8 @@ import { formatManila, hasReplied, type Conversation } from "@/lib/channels";
 import { cn } from "@/lib/utils";
 import { InitialsAvatar } from "./ConversationList";
 import { displayName, zohoLeadUrl } from "./utils";
+import { ConvertLeadButton, ConvertedBadge } from "@/components/convert/ConvertLeadButton";
+import { conversationSubject } from "@/components/convert/subjects";
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   if (children === undefined || children === null || children === "") return null;
@@ -58,6 +60,7 @@ export function LeadInfoDrawer({
               <InitialsAvatar name={displayName(c)} size={96} />
               <SheetTitle className="text-xl">{displayName(c)}</SheetTitle>
               <SheetDescription>{c.phone}</SheetDescription>
+              <ConvertedBadge subject={conversationSubject(c)} />
             </SheetHeader>
             <div className="space-y-5 px-4 pb-6">
               {(c.duplicateRowCount ?? 0) > 1 && (
@@ -69,6 +72,7 @@ export function LeadInfoDrawer({
                   </span>
                 </div>
               )}
+              <ConvertLeadButton subject={conversationSubject(c)} size="md" full />
               {extra}
               <section>
                 <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
