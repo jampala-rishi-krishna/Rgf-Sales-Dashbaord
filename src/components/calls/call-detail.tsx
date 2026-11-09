@@ -114,7 +114,10 @@ export function CallDetail({ call, onBack }: { call: VapiCall; onBack?: () => vo
             />
             <Stat
               label="Ended reason"
-              value={endedReasonText(call) || (isLive(call) ? "In progress" : "—")}
+              value={
+                humanEndedReason(endedReasonText(call)) || (isLive(call) ? "In progress" : "—")
+              }
+              title={endedReasonText(call)}
               small
             />
           </section>
@@ -305,10 +308,14 @@ function CallActions({ call }: { call: VapiCall }) {
     "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none";
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 [&>*]:w-full [&_button]:w-full [&_button]:justify-center">
       <DisabledReason
         disabled={!singleCall || noPhone}
-        reason={noPhone ? "No phone number on this call" : "Backend not connected yet"}
+        reason={
+          noPhone
+            ? "No phone number on this call"
+            : "Calling isn't switched on yet (FEATURE_SINGLE_CALL)"
+        }
       >
         <button
           type="button"
@@ -353,15 +360,43 @@ function CallActions({ call }: { call: VapiCall }) {
   );
 }
 
-function Stat({ label, value, small }: { label: string; value: string; small?: boolean }) {
+/** "customer-did-not-answer" → "Customer didn't answer"; unknown reasons are de-hyphenated. */
+function humanEndedReason(raw: string): string {
+  if (!raw) return "";
+  const r = raw.toLowerCase();
+  if (/did-not-answer|no-answer|noanswer/.test(r)) return "Customer didn't answer";
+  if (r.includes("busy")) return "Line busy";
+  if (r.includes("voicemail")) return "Voicemail";
+  if (r.includes("customer-ended")) return "Customer hung up";
+  if (r.includes("assistant-ended") || r.includes("assistant-said-end"))
+    return "Mara ended the call";
+  if (r.includes("forward") || r.includes("transfer")) return "Transferred";
+  if (r.includes("silence")) return "Ended on silence";
+  if (r.includes("max-duration") || r.includes("exceeded-max")) return "Max duration reached";
+  if (/error|fail|fault|invalid|unreachable/.test(r)) return "Call failed";
+  const t = raw.replace(/[-_.]+/g, " ").trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function Stat({
+  label,
+  value,
+  small,
+  title,
+}: {
+  label: string;
+  value: string;
+  small?: boolean;
+  title?: string;
+}) {
   return (
     <div className="rounded-xl bg-[var(--ch-panel)] px-3 py-2 ring-1 ring-white/5">
       <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ch-text-2)]">
         {label}
       </div>
       <div
-        className={`mt-0.5 truncate font-mono tabular-nums text-[var(--ch-text)] ${small ? "text-xs" : "text-sm"}`}
-        title={value}
+        className={`mt-0.5 tabular-nums text-[var(--ch-text)] ${small ? "line-clamp-2 text-xs font-medium" : "truncate font-mono text-sm"}`}
+        title={title || value}
       >
         {value}
       </div>

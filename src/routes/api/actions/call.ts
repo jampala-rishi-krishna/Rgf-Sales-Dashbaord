@@ -5,7 +5,7 @@ import { getFlags } from "@/lib/flags.server";
 import { callN8n, readJson, requireRole, toResponse } from "@/lib/n8n-actions.server";
 
 const Body = z.object({
-  leadId: z.string().min(1).max(64),
+  leadId: z.string().max(64).default(""),
   phone: z.string().min(5).max(32),
   companyName: z.string().max(300).default(""),
   leadName: z.string().max(200).default(""),
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/actions/call")({
           action: "single_call",
           channel: "voice",
           count: 1,
-          leadIds: [parsed.data.leadId],
+          leadIds: parsed.data.leadId ? [parsed.data.leadId] : [],
         });
         return toResponse(r);
       },

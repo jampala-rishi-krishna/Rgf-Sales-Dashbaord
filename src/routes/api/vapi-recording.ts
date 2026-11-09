@@ -1,59 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pickRecordingUrl } from "@/lib/vapi.server";
 
+const err = (error: string, status: number) =>
+  new Response(JSON.stringify({ error }), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+
+// Streams a call's recording: reads the call from Vapi, then fetches the recording URL
+// stored on it (artifact.recording / stereoRecordingUrl / recordingUrl) server-side.
 export const Route = createFileRoute("/api/vapi-recording")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const VAPI_PRIVATE_KEY = process.env.VAPI_PRIVATE_KEY;
+        const key = process.env.VAPI_PRIVATE_KEY;
+        if (!key) return err("Vapi credentials not configured", 500);
         const url = new URL(request.url);
         const callId = url.searchParams.get("callId");
-        const type = url.searchParams.get("type") ?? "stereo"; // "mono" | "stereo"
-
-        if (!VAPI_PRIVATE_KEY) {
-          return new Response(JSON.stringify({ error: "Vapi credentials not configured" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-
-        if (!callId) {
-          return new Response(JSON.stringify({ error: "Missing callId" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-
-        const endpoint = type === "mono" ? "mono-recording" : "stereo-recording";
-
+        if (!callId || !/^[\w-]{6,64}$/.test(callId)) return err("Missing callId", 400);
+        const prefer = url.searchParams.get("type") === "mono" ? "mono" : "stereo";
         try {
-          const vapiRes = await fetch(`https://api.vapi.ai/call/${callId}/${endpoint}`, {
-            headers: { Authorization: `Bearer ${VAPI_PRIVATE_KEY}` },
-            redirect: "follow",
+          const callRes = await fetch(`https://api.vapi.ai/call/${encodeURIComponent(callId)}`, {
+            headers: { Authorization: `Bearer ${key}` },
+            signal: AbortSignal.timeout(20_000),
           });
-
-          if (!vapiRes.ok) {
-            return new Response(
-              JSON.stringify({ error: `Vapi recording fetch failed: ${vapiRes.status}` }),
-              { status: vapiRes.status, headers: { "Content-Type": "application/json" } },
-            );
-          }
-
-          const contentType = vapiRes.headers.get("content-type") ?? "audio/wav";
-          const buffer = await vapiRes.arrayBuffer();
-
-          return new Response(buffer, {
-            status: 200,
-            headers: {
-              "Content-Type": contentType,
-              "Cache-Control": "private, max-age=3600",
-            },
+          if (!callRes.ok) return err(`Vapi call lookup failed: ${callRes.status}`, callRes.status);
+          const recUrl = pickRecordingUrl(await callRes.json(), prefer);
+          if (!recUrl) return err("No recording for this call", 404);
+          const audio = await fetch(recUrl, { signal: AbortSignal.timeout(60_000) });
+          if (!audio.ok || !audio.body) return err(`Recording fetch failed: ${audio.status}`, 502);
+          const headers = new Headers({
+            "Content-Type": audio.headers.get("content-type") ?? "audio/wav",
+            "Cache-Control": "private, max-age=3600",
           });
-        } catch (err) {
-          console.error("[vapi-recording] error:", err);
-          return new Response(JSON.stringify({ error: "Failed to fetch recording" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
+          const len = audio.headers.get("content-length");
+          if (len) headers.set("Content-Length", len);
+          return new Response(audio.body, { status: 200, headers });
+        } catch (e) {
+          console.error("[vapi-recording] error:", e);
+          return err("Failed to fetch recording", 502);
         }
       },
     },

@@ -13,7 +13,7 @@ const PATHS = {
 const Body = z.object({
   channel: z.enum(["whatsapp", "sms", "viber"]),
   lead: z.object({
-    leadId: z.string().min(1).max(64),
+    leadId: z.string().max(64).default(""),
     leadName: z.string().max(200).default(""),
     companyName: z.string().max(300).default(""),
     phone: z.string().min(5).max(32),
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/actions/opener")({
             action: "opener",
             channel,
             count: 1,
-            leadIds: [lead.leadId],
+            leadIds: lead.leadId ? [lead.leadId] : [],
           },
         );
         return toResponse(r);
